@@ -9,7 +9,7 @@
 
   <div class="logo">
     <img src="../images/logo.png" alt="SkillSync Logo" class="logo-icon" />
-    𝗌𝗄𝗂𝗅𝗅𝗌𝗒𝗇𝖼
+    <span class="logo-text">skillsync</span>
   </div>
 </div>
 
@@ -31,26 +31,25 @@
 
   <div class="token-display">
     <span aria-hidden="true">🪙</span>
-    <strong>{{tokens}}</strong>
+    <strong>{{ tokens }}</strong>
   </div>
 
   <div class="profile-menu" ng-click="toggleProfileMenu()">
-    <div class="profile-picture" aria-hidden="true">A</div>
-
-    <span class="profile-name">User</span>
+    <div class="profile-picture" aria-hidden="true">
+      {{ currentUser.initial }}
+    </div>
+    <span class="profile-name">{{ currentUser.name }}</span>
     <span class="arrow" aria-hidden="true">⌄</span>
 
     <div class="profile-dropdown" ng-show="profileOpen">
       <div class="profile-info">
-        <strong>User</strong>
-        <span>abc@example.com</span>
+        <strong>{{ currentUser.name }}</strong>
+        <span>{{ currentUser.email }}</span>
       </div>
-
       <hr />
-
       <a href="profile.html">👤 My Profile</a>
       <a href="settings.html">⚙ Settings</a>
-      <a href="#" ng-click="logout()">↪ Sign Out</a>
+      <a href="#" ng-click="logout(); $event.stopPropagation()">↪ Sign Out</a>
     </div>
   </div>
 </div>

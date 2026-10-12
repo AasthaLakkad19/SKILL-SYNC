@@ -1,528 +1,354 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" ng-app="skillSyncApp">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>SkillSync - Welcome</title>
 
     <!-- Google Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
     <!-- CSS -->
-    <link rel="stylesheet" href="../css/desktop.css">
-    <link rel="stylesheet" href="../css/home.css">
-    <link rel="stylesheet" href="../css/mobile.css">
-    <link rel="stylesheet" href="../css/sidebar_header.css">
+    <link rel="stylesheet" href="../css/desktop.css" />
+    <link rel="stylesheet" href="../css/home.css" />
+    
+    <link rel="stylesheet" href="../css/sidebar_header.css" />
 
     <!-- AngularJS -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
     <script src="../js/app.js"></script>
     <script src="../Controllers/homeController.js"></script>
-        <script src="../Controllers/chatbotController.js"></script>
-</head>
+    <script src="../Controllers/chatbotController.js"></script>
+    <script src="../Controllers/headerController.js"></script>
+  </head>
 
-<body ng-controller="HomeController">
-
+  <body ng-controller="HomeController">
     <div class="dashboard" ng-class="{'sidebar-open': sidebarOpen}">
+      <!-- ================= HEADER ================= -->
+      
+      <header class="top-header" ng-controller="HeaderController">
+        <div ng-include="'../components/header.html'"></div>
+      </header>
 
-        <!-- ================= HEADER ================= -->
-        <header class="top-header">
+      <!-- ================= SIDEBAR ================= -->
+      <aside class="sidebar" ng-class="{'sidebar-open': sidebarOpen}">
+        <nav>
+          <a href="firstLogin.html" class="nav-item active">
+            <span>🏠</span>
+            <span>Home</span>
+          </a>
 
-            <div class="header-left">
+          <a href="learnSkills.html" class="nav-item">
+            <span>📚</span>
+            <span>Learn Skills</span>
+          </a>
 
-                <button class="menu-btn" ng-click="toggleSidebar()" aria-label="Toggle navigation menu">
-                    ☰
-                </button>
+          <a href="teachSkills.html" class="nav-item">
+            <span>🎓</span>
+            <span>Teach Skills</span>
+          </a>
 
-                <div class="logo">
+          <a href="findTeam.html" class="nav-item">
+            <span>👥</span>
+            <span>Find Teammates</span>
+          </a>
 
-            <img src="images/logo.png" alt="SkillSync Logo" class="logo-icon">
-            𝗌𝗄𝗂𝗅𝗅𝗌𝗒𝗇𝖼
-        </div>
+          <a href="profile.html" class="nav-item">
+            <span>👤</span>
+            <span>My Profile</span>
+          </a>
 
+          <div class="nav-submenu">
+            <a href="achievements.html"> 🏆 Achievements </a>
+
+            <a href="wallet.html"> 🪙 Skill Wallet </a>
+
+            <a href="projects.html"> 📂 My Projects </a>
+
+            <a href="buildResume.html"> 📄 Build Resume </a>
+          </div>
+
+          <a href="settings.html" class="nav-item">
+            <span>⚙</span>
+            <span>Settings</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- ================= MAIN CONTENT ================= -->
+      <main class="main-content">
+        <!-- Welcome -->
+        <section class="welcome-section">
+          <div class="welcome-text">
+            <span class="welcome-label">
+              YOUR SKILLS • YOUR NETWORK • YOUR FUTURE
+            </span>
+
+            <h1>
+              Welcome to SkillSync,
+              <span>{{currentUser.name}}</span> 👋
+            </h1>
+
+            <p>
+              Learn new skills, share your knowledge and find talented teammates
+              for your next project.
+            </p>
+          </div>
+        </section>
+
+        <!-- ================= TOKEN CARD ================= -->
+        <section class="token-welcome-card">
+          <div class="token-icon" aria-hidden="true">🪙</div>
+
+          <div class="token-content">
+            <h2>
+              You have
+              <strong>{{tokens}} Free Skill Tokens!</strong>
+            </h2>
+
+            <p>
+              Use your Skill Tokens to learn skills from other students and grow
+              your knowledge.
+            </p>
+          </div>
+
+          <button class="primary-btn" ng-click="goToLearn()">
+            Explore Skills →
+          </button>
+        </section>
+
+        <!-- ================= GET STARTED ================= -->
+        <section class="section">
+          <div class="section-heading">
+            <div>
+              <span class="section-label">GET STARTED</span>
+
+              <h2>Start your SkillSync journey</h2>
+
+              <p>Choose what you want to do first.</p>
+            </div>
+          </div>
+
+          <div class="action-grid">
+            <!-- Learn -->
+            <div class="action-card">
+              <div class="action-icon purple" aria-hidden="true">📚</div>
+
+              <h3>Learn a Skill</h3>
+
+              <p>
+                Discover skills from talented students and start learning
+                something new.
+              </p>
+
+              <button class="outline-btn" ng-click="goToLearn()">
+                Explore Skills
+              </button>
             </div>
 
-            <!-- Search -->
-            <div class="search-box">
-                <span aria-hidden="true">⌕</span>
-                <input type="text" placeholder="Search skills, students..." ng-model="searchText" aria-label="Search skills and students">
+            <!-- Teach -->
+            <div class="action-card">
+              <div class="action-icon green" aria-hidden="true">🎓</div>
+
+              <h3>Teach a Skill</h3>
+
+              <p>
+                Share your knowledge with other students and earn Skill Tokens.
+              </p>
+
+              <button class="outline-btn" ng-click="goToTeach()">
+                Start Teaching
+              </button>
             </div>
 
-            <!-- Header Right -->
-            <div class="header-right">
+            <!-- Team -->
+            <div class="action-card">
+              <div class="action-icon orange" aria-hidden="true">👥</div>
 
-                <button class="header-icon" aria-label="Notifications">🔔</button>
-                <button class="header-icon" aria-label="Messages">💬</button>
+              <h3>Find Teammates</h3>
 
-                <div class="token-display">
-                    <span aria-hidden="true">🪙</span>
-                    <strong>{{tokens}}</strong>
-                </div>
+              <p>
+                Find students with complementary skills for your next project.
+              </p>
 
-                <div class="profile-menu" ng-click="toggleProfileMenu()">
+              <button class="outline-btn" ng-click="goToTeam()">
+                Find Team
+              </button>
+            </div>
+          </div>
+        </section>
 
-                    <div class="profile-picture" aria-hidden="true">
-                        A
-                    </div>
+        <!-- ================= PROFILE COMPLETION ================= -->
+        <section class="profile-completion">
+          <div class="completion-left">
+            <div class="completion-icon" aria-hidden="true">✨</div>
 
-                    <span class="profile-name">User</span>
-                    <span class="arrow" aria-hidden="true">⌄</span>
+            <div>
+              <span class="section-label"> ONE MORE STEP </span>
 
-                    <div class="profile-dropdown" ng-show="profileOpen">
+              <h2>Complete your profile</h2>
 
-                        <div class="profile-info">
-                            <strong>User</strong>
-                            <span>abc@example.com</span>
-                        </div>
+              <p>
+                Add your skills and interests so SkillSync can give you better
+                recommendations.
+              </p>
+            </div>
+          </div>
 
-                        <hr>
+          <div class="completion-right">
+            <div class="progress-header">
+              <span>Profile Completion</span>
 
-                        <a href="profile.html">👤 My Profile</a>
-                        <a href="settings.html">⚙ Settings</a>
-                        <a href="#" ng-click="logout()">↪ Sign Out</a>
-
-                    </div>
-
-                </div>
-
+              <strong>{{profileProgress}}%</strong>
             </div>
 
-        </header>
-
-
-        <!-- ================= SIDEBAR ================= -->
-        <aside class="sidebar" ng-class="{'sidebar-open': sidebarOpen}">
-
-            <nav>
-
-                <a href="firstLogin.html" class="nav-item active">
-                    <span>🏠</span>
-                    <span>Home</span>
-                </a>
-
-                <a href="learnSkills.html" class="nav-item">
-                    <span>📚</span>
-                    <span>Learn Skills</span>
-                </a>
-
-                <a href="teachSkills.html" class="nav-item">
-                    <span>🎓</span>
-                    <span>Teach Skills</span>
-                </a>
-
-                <a href="findTeam.html" class="nav-item">
-                    <span>👥</span>
-                    <span>Find Teammates</span>
-                </a>
-
-                <a href="profile.html" class="nav-item">
-                    <span>👤</span>
-                    <span>My Profile</span>
-                </a>
-
-                <div class="nav-submenu">
-
-                    <a href="achievements.html">
-                        🏆 Achievements
-                    </a>
-
-                    <a href="wallet.html">
-                        🪙 Skill Wallet
-                    </a>
-
-                    <a href="projects.html">
-                        📂 My Projects
-                    </a>
-
-                    <a href="buildResume.html">
-                        📄 Build Resume
-                    </a>
-
-                </div>
-
-                <a href="settings.html" class="nav-item">
-                    <span>⚙</span>
-                    <span>Settings</span>
-                </a>
-
-            </nav>
-
-        </aside>
-
-
-        <!-- ================= MAIN CONTENT ================= -->
-        <main class="main-content">
-
-            <!-- Welcome -->
-            <section class="welcome-section">
-
-                <div class="welcome-text">
-
-                    <span class="welcome-label">
-                        YOUR SKILLS • YOUR NETWORK • YOUR FUTURE
-                    </span>
-
-                    <h1>
-                        Welcome to SkillSync,
-                        <span>User</span> 👋
-                    </h1>
-
-                    <p>
-                        Learn new skills, share your knowledge and find
-                        talented teammates for your next project.
-                    </p>
-
-                </div>
-
-            </section>
-
-
-            <!-- ================= TOKEN CARD ================= -->
-            <section class="token-welcome-card">
-
-                <div class="token-icon" aria-hidden="true">
-                    🪙
-                </div>
-
-                <div class="token-content">
-
-                    <h2>
-                        You have
-                        <strong>{{tokens}} Free Skill Tokens!</strong>
-                    </h2>
-
-                    <p>
-                        Use your Skill Tokens to learn skills from other
-                        students and grow your knowledge.
-                    </p>
-
-                </div>
-
-                <button class="primary-btn" ng-click="goToLearn()">
-                    Explore Skills →
-                </button>
-
-            </section>
-
-
-            <!-- ================= GET STARTED ================= -->
-            <section class="section">
-
-                <div class="section-heading">
-
-                    <div>
-                        <span class="section-label">GET STARTED</span>
-
-                        <h2>
-                            Start your SkillSync journey
-                        </h2>
-
-                        <p>
-                            Choose what you want to do first.
-                        </p>
-                    </div>
-
-                </div>
-
-
-                <div class="action-grid">
-
-                    <!-- Learn -->
-                    <div class="action-card">
-
-                        <div class="action-icon purple" aria-hidden="true">
-                            📚
-                        </div>
-
-                        <h3>Learn a Skill</h3>
-
-                        <p>
-                            Discover skills from talented students
-                            and start learning something new.
-                        </p>
-
-                        <button class="outline-btn" ng-click="goToLearn()">
-                            Explore Skills
-                        </button>
-
-                    </div>
-
-
-                    <!-- Teach -->
-                    <div class="action-card">
-
-                        <div class="action-icon green" aria-hidden="true">
-                            🎓
-                        </div>
-
-                        <h3>Teach a Skill</h3>
-
-                        <p>
-                            Share your knowledge with other students
-                            and earn Skill Tokens.
-                        </p>
-
-                        <button class="outline-btn" ng-click="goToTeach()">
-                            Start Teaching
-                        </button>
-
-                    </div>
-
-
-                    <!-- Team -->
-                    <div class="action-card">
-
-                        <div class="action-icon orange" aria-hidden="true">
-                            👥
-                        </div>
-
-                        <h3>Find Teammates</h3>
-
-                        <p>
-                            Find students with complementary skills
-                            for your next project.
-                        </p>
-
-                        <button class="outline-btn" ng-click="goToTeam()">
-                            Find Team
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- ================= PROFILE COMPLETION ================= -->
-            <section class="profile-completion">
-
-                <div class="completion-left">
-
-                    <div class="completion-icon" aria-hidden="true">
-                        ✨
-                    </div>
-
-                    <div>
-
-                        <span class="section-label">
-                            ONE MORE STEP
-                        </span>
-
-                        <h2>
-                            Complete your profile
-                        </h2>
-
-                        <p>
-                            Add your skills and interests so SkillSync
-                            can give you better recommendations.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="completion-right">
-
-                    <div class="progress-header">
-
-                        <span>Profile Completion</span>
-
-                        <strong>{{profileProgress}}%</strong>
-
-                    </div>
-
-                    <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{profileProgress}}">
-
-                        <div class="progress-fill" ng-style="{'width': profileProgress + '%'}">
-                        </div>
-
-                    </div>
-
-                    <button class="primary-btn" ng-click="goToProfile()">
-                        Complete Profile →
-                    </button>
-
-                </div>
-
-            </section>
-
-
-            <!-- ================= POPULAR SKILLS ================= -->
-            <section class="section">
-
-                <div class="section-heading skills-heading">
-
-                    <div>
-                        <span class="section-label">
-                            EXPLORE
-                        </span>
-
-                        <h2>
-                            Popular Skills
-                        </h2>
-
-                        <p>
-                            Start exploring what other students are learning.
-                        </p>
-                    </div>
-
-                    <a href="learnSkills.html">
-                        View All →
-                    </a>
-
-                </div>
-
-
-                <div class="skills-grid">
-
-                    <div class="skill-card" ng-repeat="skill in popularSkills">
-
-                        <div class="skill-logo" aria-hidden="true">
-                            {{skill.icon}}
-                        </div>
-
-                        <div class="skill-info">
-
-                            <h3>
-                                {{skill.name}}
-                            </h3>
-
-                            <span>
-                                {{skill.students}} students learning
-                            </span>
-
-                        </div>
-
-                        <button ng-click="learnSkill(skill)">
-                            Learn
-                        </button>
-
-                    </div>
-
-                </div>
-
-            </section>
-
-
-            <!-- ================= EMPTY PROJECT ================= -->
-            <section class="empty-project">
-
-                <div class="empty-icon" aria-hidden="true">
-                    📂
-                </div>
-
-                <div>
-
-                    <span class="section-label">
-                        PROJECTS
-                    </span>
-
-                    <h2>
-                        Your project space is waiting!
-                    </h2>
-
-                    <p>
-                        Create or join your first project and start
-                        collaborating with other students.
-                    </p>
-
-                </div>
-
-                <button class="primary-btn" ng-click="goToProjects()">
-                    Find Projects →
-                </button>
-
-            </section>
-
-
-            <!-- ================= WHY SKILLSYNC ================= -->
-            <section class="why-skillsync">
-
-                <span class="section-label">
-                    WHY SKILLSYNC?
-                </span>
-
-                <h2>
-                    Learn. Share. Connect. Grow.
-                </h2>
-
-                <div class="why-grid">
-
-                    <div>
-                        <span aria-hidden="true">📚</span>
-                        <h3>Learn</h3>
-                        <p>Learn directly from other students.</p>
-                    </div>
-
-                    <div>
-                        <span aria-hidden="true">🎓</span>
-                        <h3>Share</h3>
-                        <p>Teach your skills and earn tokens.</p>
-                    </div>
-
-                    <div>
-                        <span aria-hidden="true">🤝</span>
-                        <h3>Connect</h3>
-                        <p>Build your network and find teammates.</p>
-                    </div>
-
-                    <div>
-                        <span aria-hidden="true">🚀</span>
-                        <h3>Grow</h3>
-                        <p>Turn your skills into real opportunities.</p>
-                    </div>
-
-                </div>
-
-            </section>
-
-        </main>
-
+            <div
+              class="progress-bar"
+              role="progressbar"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="{{profileProgress}}"
+            >
+              <div
+                class="progress-fill"
+                ng-style="{'width': profileProgress + '%'}"
+              ></div>
+            </div>
+
+            <button class="primary-btn" ng-click="goToProfile()">
+              Complete Profile →
+            </button>
+          </div>
+        </section>
+
+        <!-- ================= POPULAR SKILLS ================= -->
+        <section class="section">
+          <div class="section-heading skills-heading">
+            <div>
+              <span class="section-label"> EXPLORE </span>
+
+              <h2>Popular Skills</h2>
+
+              <p>Start exploring what other students are learning.</p>
+            </div>
+
+            <a href="learnSkills.html"> View All → </a>
+          </div>
+
+          <div class="skills-grid">
+            <div class="skill-card" ng-repeat="skill in popularSkills">
+              <div class="skill-logo" aria-hidden="true">{{skill.icon}}</div>
+
+              <div class="skill-info">
+                <h3>{{skill.name}}</h3>
+
+                <span> {{skill.students}} students learning </span>
+              </div>
+
+              <button ng-click="learnSkill(skill)">Learn</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= EMPTY PROJECT ================= -->
+        <section class="empty-project">
+          <div class="empty-icon" aria-hidden="true">📂</div>
+
+          <div>
+            <span class="section-label"> PROJECTS </span>
+
+            <h2>Your project space is waiting!</h2>
+
+            <p>
+              Create or join your first project and start collaborating with
+              other students.
+            </p>
+          </div>
+
+          <button class="primary-btn" ng-click="goToProjects()">
+            Find Projects →
+          </button>
+        </section>
+
+        <!-- ================= WHY SKILLSYNC ================= -->
+        <section class="why-skillsync">
+          <span class="section-label"> WHY SKILLSYNC? </span>
+
+          <h2>Learn. Share. Connect. Grow.</h2>
+
+          <div class="why-grid">
+            <div>
+              <span aria-hidden="true">📚</span>
+              <h3>Learn</h3>
+              <p>Learn directly from other students.</p>
+            </div>
+
+            <div>
+              <span aria-hidden="true">🎓</span>
+              <h3>Share</h3>
+              <p>Teach your skills and earn tokens.</p>
+            </div>
+
+            <div>
+              <span aria-hidden="true">🤝</span>
+              <h3>Connect</h3>
+              <p>Build your network and find teammates.</p>
+            </div>
+
+            <div>
+              <span aria-hidden="true">🚀</span>
+              <h3>Grow</h3>
+              <p>Turn your skills into real opportunities.</p>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
     <!-- ================= CHATBOT ================= -->
     <div class="chatbot-container" ng-controller="ChatbotController">
-
-        <!-- Chat Window -->
-        <div class="chat-window" ng-class="{'active': isChatOpen}">
-            <div class="chat-header">
-                <div class="chat-header-info">
-                    <span class="chat-avatar">∞</span>
-                    <div>
-                        <h4>SkillSync Assistant</h4>
-                        <p>Online</p>
-                    </div>
-                </div>
-                <button class="chat-close" ng-click="closeChat()">✕</button>
+      <!-- Chat Window -->
+      <div class="chat-window" ng-class="{'active': isChatOpen}">
+        <div class="chat-header">
+          <div class="chat-header-info">
+            <span class="chat-avatar">∞</span>
+            <div>
+              <h4>SkillSync Assistant</h4>
+              <p>Online</p>
             </div>
-
-            <div class="chat-body" id="chatBody">
-                <div ng-repeat="msg in messages"
-                    ng-class="{'bot-message': msg.type === 'bot', 'user-message': msg.type === 'user'}">
-                    <p>{{msg.text}}</p>
-                </div>
-            </div>
-
-            <div class="chat-footer">
-                <input type="text" ng-model="userMessage" ng-keypress="handleKeyPress($event)"
-                    placeholder="Type your message...">
-                <button ng-click="sendMessage()">➤</button>
-            </div>
+          </div>
+          <button class="chat-close" ng-click="closeChat()">✕</button>
         </div>
 
-        <!-- Floating Button -->
-        <button class="chatbot-btn" ng-click="toggleChat()">
+        <div class="chat-body" id="chatBody">
+          <div
+            ng-repeat="msg in messages"
+            ng-class="{'bot-message': msg.type === 'bot', 'user-message': msg.type === 'user'}"
+          >
+            <p>{{msg.text}}</p>
+          </div>
+        </div>
 
-            <img src="../images/chatbot.png" alt="Chatbot">
+        <div class="chat-footer">
+          <input
+            type="text"
+            ng-model="userMessage"
+            ng-keypress="handleKeyPress($event)"
+            placeholder="Type your message..."
+          />
+          <button ng-click="sendMessage()">➤</button>
+        </div>
+      </div>
 
-        </button>
+      <!-- Floating Button -->
+      <button class="chatbot-btn" ng-click="toggleChat()">
+        <img src="../images/chatbot.png" alt="Chatbot" />
+      </button>
     </div>
-
-</body>
-
+  </body>
 </html>
