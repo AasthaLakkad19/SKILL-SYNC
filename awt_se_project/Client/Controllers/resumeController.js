@@ -1,4 +1,4 @@
-app.controller("ResumeController", function ($scope, $http) {
+app.controller("ResumeController", function ($scope, $http, $timeout) {
   $scope.resume = {
     personalInfo: {},
     education: [],
@@ -229,7 +229,71 @@ app.controller("ResumeController", function ($scope, $http) {
   $scope.removeSkill = function (type, index) {
     $scope.resume.skills[type].splice(index, 1);
   };
+  // ===== Validation helpers =====
+  $scope.isValidName = function (val) {
+    return /^[A-Za-z\s\.\-]{2,60}$/.test(val || "");
+  };
 
+  $scope.isValidEmail = function (val) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val || "");
+  };
+
+  $scope.isValidPhone = function (val) {
+    return /^[\d\s\+\-\(\)]{7,18}$/.test(val || "");
+  };
+
+  $scope.isValidUrl = function (val) {
+    if (!val) return true;
+    try {
+      new URL(val);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  // Block non-phone characters while typing
+  $scope.restrictPhone = function (e) {
+    const allowed = /[\d\s\+\-\(\)]/;
+    if (
+      !allowed.test(e.key) &&
+      e.key !== "Backspace" &&
+      e.key !== "Delete" &&
+      e.key !== "Tab"
+    ) {
+      e.preventDefault();
+    }
+  };
+
+  // Optional: validate before saving
+  $scope.validateResume = function () {
+    const r = $scope.resume.personalInfo;
+    if (!r.fullName || !r.email) {
+      alert("Full Name and Email are required.");
+      return false;
+    }
+    if (r.fullName && !$scope.isValidName(r.fullName)) {
+      alert("Full Name can only contain letters, spaces, dots and hyphens.");
+      return false;
+    }
+    if (r.email && !$scope.isValidEmail(r.email)) {
+      alert("Please enter a valid email address.");
+      return false;
+    }
+    if (r.phone && !$scope.isValidPhone(r.phone)) {
+      alert("Phone number can only contain digits, spaces, +, -, ( ).");
+      return false;
+    }
+    if (r.linkedin && !$scope.isValidUrl(r.linkedin)) {
+      alert("LinkedIn must be a valid URL (start with https://).");
+      return false;
+    }
+    if (r.github && !$scope.isValidUrl(r.github)) {
+      alert("GitHub must be a valid URL (start with https://).");
+      return false;
+    }
+    return true;
+  };
   // Photo
   $scope.triggerPhotoUpload = function () {
     document.getElementById("photoInput").click();
@@ -253,17 +317,16 @@ app.controller("ResumeController", function ($scope, $http) {
 
   // Save Resume
   $scope.saveResume = function () {
+    if (!$scope.validateResume()) return;
+
     $scope.saving = true;
-
     const dataToSend = angular.copy($scope.resume);
-
     dataToSend.userId = "demo-user";
 
     $http
       .post("/api/resume", dataToSend)
       .then(function (res) {
         alert("Resume saved successfully!");
-        console.log(res.data);
       })
       .catch(function (err) {
         alert("Error saving resume");
@@ -273,6 +336,9 @@ app.controller("ResumeController", function ($scope, $http) {
         $scope.saving = false;
       });
   };
+
+  // Also fix the bottom button which currently calls the non-existent saveProfile()
+  $scope.saveProfile = $scope.saveResume;
 
   // Resume Preview
   $scope.previewResume = function () {
@@ -286,63 +352,78 @@ app.controller("ResumeController", function ($scope, $http) {
   };
 
   // Download PDF
+  // ================= PDF DOWNLOAD =================
+
   $scope.downloadPDF = function () {
-    $scope.showResume = true;
+    console.log("Download PDF clicked");
 
-    setTimeout(function () {
-      const element = document.getElementById("resume-paper");
+    var element = document.getElementById("resume-paper");
 
-      if (!element) {
-        alert("Resume not found. Please open Preview first.");
-        return;
-      }
+    if (!element) {
+      alert("Resume preview not found.");
+      console.error("resume-paper element not found");
+      return;
+    }
 
-      const opt = {
-        margin: [8, 8, 8, 8],
+    if (typeof html2pdf === "undefined") {
+      alert("PDF library is not loaded.");
+      console.error("html2pdf is undefined");
+      return;
+    }
 
-        filename:
-          ($scope.resume.personalInfo.fullName || "Resume") + "_SkillSync.pdf",
+    var fullName = "Resume";
 
-        image: {
-          type: "jpeg",
-          quality: 0.98,
-        },
+    if (
+      $scope.resume &&
+      $scope.resume.personalInfo &&
+      $scope.resume.personalInfo.fullName
+    ) {
+      fullName = $scope.resume.personalInfo.fullName
+        .trim()
+        .replace(/[^a-zA-Z0-9_-]/g, "_");
+    }
 
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          letterRendering: true,
-        },
+    console.log("Starting PDF generation...");
 
-        jsPDF: {
-          unit: "mm",
-          format: "a4",
-          orientation: "portrait",
-        },
+    var options = {
+      margin: 0,
+      filename: fullName + "_SkillSync.pdf",
 
-        pagebreak: {
-          mode: ["avoid-all", "css", "legacy"],
-        },
-      };
+      image: {
+        type: "jpeg",
+        quality: 0.98,
+      },
 
-      html2pdf()
-        .set(opt)
-        .from(element)
-        .save()
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        logging: true,
+      },
 
-        .then(function () {
-          console.log("PDF downloaded successfully");
-        })
+      jsPDF: {
+        unit: "mm",
+        format: "a4",
+        orientation: "portrait",
+      },
 
-        .catch(function (err) {
-          console.error("PDF Error:", err);
-          alert("Failed to generate PDF. Please try again.");
-        });
-    }, 400);
+      pagebreak: {
+        mode: ["css", "legacy"],
+      },
+    };
+
+    html2pdf()
+      .set(options)
+      .from(element)
+      .save()
+      .then(function () {
+        console.log("PDF downloaded successfully.");
+      })
+      .catch(function (error) {
+        console.error("PDF generation error:", error);
+        alert("PDF generation failed. Check the browser console.");
+      });
   };
-
-  // Scroll
   // Active section for side-nav highlight (scroll-spy)
   $scope.activeSection = "personal";
 

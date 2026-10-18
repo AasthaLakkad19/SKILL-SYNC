@@ -1,4 +1,3 @@
-
 :root {
   /* ===== Colour Palette (aligned with dashboard) ===== */
   --primary: #395176;
@@ -11,9 +10,9 @@
   --text-dark: #1e293b;
   --text-muted: #64748b;
 
-  --gradient-color-1: #E8F0FE;
-  --gradient-color-2: #EEF2F9;
-  --gradient-color-3: #F0E9F7;
+  --gradient-color-1: #e8f0fe;
+  --gradient-color-2: #eef2f9;
+  --gradient-color-3: #f0e9f7;
   --gradient-color-4: #ffffff;
 
   --bg: linear-gradient(
@@ -58,7 +57,6 @@
   --transition-slow: 0.45s var(--ease);
 }
 
-
 /* ============================================================
    GLOBAL
    ============================================================ */
@@ -70,7 +68,6 @@
   margin: 0;
   padding: 0;
 }
-
 
 /* ============================================================
    PAGE LAYOUT
@@ -92,7 +89,6 @@
   max-width: 1400px;
 }
 
-
 /* ============================================================
    ACCESSIBILITY
    ============================================================ */
@@ -113,7 +109,6 @@
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
-
 
 /* ============================================================
    PAGE TITLE / ACTIONS
@@ -159,7 +154,6 @@
   flex-wrap: wrap;
 }
 
-
 /* ============================================================
    PROFILE LAYOUT
    ============================================================ */
@@ -184,7 +178,9 @@
   box-shadow: var(--shadow);
   text-align: center;
   margin-bottom: 20px;
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 
 .profile-card:hover {
@@ -200,7 +196,9 @@
   position: relative;
   cursor: pointer;
   border: 3px solid #e0e7ff;
-  transition: border-color 0.25s ease, transform 0.2s ease;
+  transition:
+    border-color 0.25s ease,
+    transform 0.2s ease;
 }
 
 .photo-wrapper:hover {
@@ -248,7 +246,6 @@
   -webkit-box-orient: vertical;
 }
 
-
 /* ============================================================
    PROFILE COMPLETION
    ============================================================ */
@@ -278,7 +275,6 @@
   border-radius: 20px;
   transition: width 0.5s ease;
 }
-
 
 /* ============================================================
    PROFILE SIDE NAV
@@ -322,7 +318,6 @@
   height: 60%;
 }
 
-
 /* ============================================================
    CARDS / FORMS
    ============================================================ */
@@ -334,7 +329,9 @@
   box-shadow: var(--shadow);
   margin-bottom: 24px;
   animation: fadeUp 0.4s ease;
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 
 .card:hover {
@@ -416,7 +413,6 @@
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
 }
 
-
 /* ============================================================
    DYNAMIC ITEMS
    ============================================================ */
@@ -427,7 +423,9 @@
   padding: 18px;
   margin-bottom: 16px;
   border: 1px solid var(--border);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .dynamic-item:hover {
@@ -448,7 +446,6 @@
   margin-top: 2px;
 }
 
-
 /* ============================================================
    SKILLS
    ============================================================ */
@@ -459,7 +456,10 @@
   border-radius: 14px;
   padding: 18px 20px;
   margin-bottom: 18px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .skill-category:hover {
@@ -515,7 +515,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .tag:hover {
@@ -541,14 +543,15 @@
   color: inherit;
   opacity: 0.7;
   border-radius: 50%;
-  transition: opacity 0.15s ease, color 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    color 0.15s ease;
 }
 
 .tag button:hover {
   opacity: 1;
   color: #b91c1c;
 }
-
 
 /* ============================================================
    BUTTONS
@@ -646,7 +649,6 @@
   margin-top: 8px;
   margin-bottom: 40px;
 }
-
 
 /* ============================================================
    MODAL + RESUME
@@ -800,7 +802,6 @@
   margin-bottom: 2px;
 }
 
-
 /* ============================================================
    RESUME PDF
    ============================================================ */
@@ -809,62 +810,29 @@
   width: 210mm !important;
   min-height: 297mm !important;
   padding: 15mm 18mm !important;
-  background: white !important;
-  color: #111 !important;
+  background: #ffffff !important;
+  color: #111111 !important;
   font-family: "Inter", Arial, sans-serif !important;
   box-shadow: none !important;
   margin: 0 auto;
+  position: relative;
+  overflow: visible !important;
 }
-
 #resume-paper * {
   box-sizing: border-box;
 }
-
-#resume-paper h1 {
-  font-size: 22pt !important;
-  margin-bottom: 4px !important;
-  color: #111 !important;
-}
-
-#resume-paper h2 {
-  font-size: 12.5pt !important;
-  color: #1e40af !important;
-  border-bottom: 1.5px solid #cbd5e1 !important;
-  padding-bottom: 3px !important;
-  margin: 14px 0 6px 0 !important;
-  page-break-after: avoid;
-}
-
-#resume-paper .resume-section {
-  margin-bottom: 10px;
-  page-break-inside: avoid;
-}
-
 #resume-paper p,
+#resume-paper li,
 #resume-paper .item-sub,
-#resume-paper li {
-  font-size: 10pt !important;
-  line-height: 1.4 !important;
-  color: #222 !important;
+#resume-paper .item-detail {
+  color: #222222 !important;
 }
-
-#resume-paper .item-title {
-  font-weight: 600 !important;
-  font-size: 10.5pt !important;
+#resume-paper h1 {
+  color: #111111 !important;
 }
-
-#resume-paper a {
+#resume-paper h2 {
   color: #1e40af !important;
-  text-decoration: none !important;
 }
-
-#resume-paper button,
-#resume-paper .modal-actions,
-#resume-paper .template-selector {
-  display: none !important;
-}
-
-
 /* ============================================================
    RESUME TEMPLATES
    ============================================================ */
@@ -919,7 +887,6 @@
   text-decoration: underline;
 }
 
-
 /* Minimal */
 
 .resume.minimal .resume-header {
@@ -948,7 +915,6 @@
 .resume.minimal .resume-section {
   margin-bottom: 12px;
 }
-
 
 /* Professional */
 
@@ -979,7 +945,6 @@
   margin-bottom: 12px;
 }
 
-
 /* ============================================================
    SCROLLBARS
    ============================================================ */
@@ -1002,7 +967,6 @@
   background: #94a3b8;
 }
 
-
 /* ============================================================
    FOCUS
    ============================================================ */
@@ -1015,7 +979,6 @@ textarea:focus-visible {
   outline-offset: 2px;
 }
 
-
 /* ============================================================
    RESPONSIVE
    Only page/profile/resume responsive styles remain here.
@@ -1023,15 +986,12 @@ textarea:focus-visible {
    ============================================================ */
 
 @media (max-width: 1024px) {
-
   .dashboard .main-content {
     padding: var(--space-7) var(--space-6) var(--space-9);
   }
-
 }
 
 @media (max-width: 900px) {
-
   .dashboard .main-content {
     padding: var(--space-6) var(--space-4) var(--space-8);
   }
@@ -1047,11 +1007,9 @@ textarea:focus-visible {
   .form-grid {
     grid-template-columns: 1fr;
   }
-
 }
 
 @media (max-width: 600px) {
-
   .profile-page-actions {
     flex-direction: column;
   }
@@ -1083,5 +1041,4 @@ textarea:focus-visible {
     width: 100%;
     text-align: center;
   }
-
 }

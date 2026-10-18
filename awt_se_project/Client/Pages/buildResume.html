@@ -10,8 +10,7 @@
     />
     <link rel="stylesheet" href="../css/buildResume.css" />
     <link rel="stylesheet" href="../css/home.css" />
-    
-    
+
     <link rel="stylesheet" href="../css/mobile.css" />
     <link rel="stylesheet" href="../css/sidebar_header.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
@@ -20,71 +19,9 @@
   <body ng-controller="ResumeController">
     <div class="dashboard" ng-class="{'sidebar-open': sidebarOpen}">
       <!-- ================= HEADER ================= -->
-      <header class="top-header">
-        <div class="header-left">
-          <button
-            class="menu-btn"
-            ng-click="toggleSidebar()"
-            aria-label="Toggle navigation menu"
-          >
-            ☰
-          </button>
-          <div class="logo">
-            <img src="images/logo.png" alt="SkillSync Logo" class="logo-icon" />
-            𝗌𝗄𝗂𝗅𝗅𝗌𝗒𝗇𝖼
-          </div>
-        </div>
-
-        <div class="search-box">
-          <span aria-hidden="true">⌕</span>
-          <input
-            type="text"
-            placeholder="Search skills, students..."
-            ng-model="searchText"
-            aria-label="Search skills and students"
-          />
-        </div>
-
-        <div class="header-right">
-          <button class="header-icon" aria-label="Notifications">🔔</button>
-          <button class="header-icon" aria-label="Messages">💬</button>
-
-          <div class="token-display">
-            <span aria-hidden="true">🪙</span>
-            <strong>{{ tokens }}</strong>
-          </div>
-
-          <div class="profile-menu" ng-click="toggleProfileMenu()">
-            <div class="profile-picture" aria-hidden="true">
-              {{ (profile.personalInfo.fullName || 'A').charAt(0).toUpperCase()
-              }}
-            </div>
-            <span class="profile-name"
-              >{{ profile.personalInfo.fullName ?
-              profile.personalInfo.fullName.split(' ')[0] : 'User' }}</span
-            >
-            <span class="arrow" aria-hidden="true">⌄</span>
-
-            <div
-              class="profile-dropdown"
-              ng-show="profileOpen"
-              ng-click="$event.stopPropagation()"
-            >
-              <div class="profile-info">
-                <strong
-                  >{{ profile.personalInfo.fullName || 'Your Name' }}</strong
-                >
-                <span
-                  >{{ profile.personalInfo.email || 'email@example.com' }}</span
-                >
-              </div>
-              <hr />
-              <a href="profile.html">👤 My Profile</a>
-              <a href="settings.html">⚙ Settings</a>
-              <a href="#" ng-click="logout()">↪ Sign Out</a>
-            </div>
-          </div>
-        </div>
+      <!-- ================= HEADER ================= -->
+      <header class="top-header" ng-controller="HeaderController">
+        <div ng-include="'../components/header.html'"></div>
       </header>
 
       <!-- ================= SIDEBAR ================= -->
@@ -239,6 +176,7 @@
           <!-- Form content -->
           <div class="profile-form-area">
             <!-- Personal Info -->
+            <!-- Personal Info -->
             <section id="personal" class="card">
               <h3>Personal Information</h3>
               <div class="form-grid">
@@ -248,6 +186,10 @@
                     type="text"
                     ng-model="resume.personalInfo.fullName"
                     placeholder="ABC"
+                    pattern="[A-Za-z\s\.\-]{2,60}"
+                    title="Only letters, spaces, dots and hyphens (2-60 characters)"
+                    required
+                    ng-class="{invalid: resume.personalInfo.fullName && !isValidName(resume.personalInfo.fullName)}"
                   />
                 </div>
                 <div class="form-group">
@@ -256,14 +198,20 @@
                     type="email"
                     ng-model="resume.personalInfo.email"
                     placeholder="abc@example.com"
+                    required
+                    ng-class="{invalid: resume.personalInfo.email && !isValidEmail(resume.personalInfo.email)}"
                   />
                 </div>
                 <div class="form-group">
                   <label>Phone</label>
                   <input
-                    type="text"
+                    type="tel"
                     ng-model="resume.personalInfo.phone"
                     placeholder="+91 98765 43210"
+                    pattern="[\d\s\+\-\(\)]{7,18}"
+                    title="Only numbers, spaces, +, -, ( )"
+                    ng-keypress="restrictPhone($event)"
+                    ng-class="{invalid: resume.personalInfo.phone && !isValidPhone(resume.personalInfo.phone)}"
                   />
                 </div>
                 <div class="form-group">
@@ -272,6 +220,7 @@
                     type="text"
                     ng-model="resume.personalInfo.location"
                     placeholder="Ahmedabad, India"
+                    maxlength="80"
                   />
                 </div>
                 <div class="form-group">
@@ -280,6 +229,7 @@
                     type="url"
                     ng-model="resume.personalInfo.linkedin"
                     placeholder="https://linkedin.com/in/..."
+                    ng-class="{invalid: resume.personalInfo.linkedin && !isValidUrl(resume.personalInfo.linkedin)}"
                   />
                 </div>
                 <div class="form-group">
@@ -288,6 +238,7 @@
                     type="url"
                     ng-model="resume.personalInfo.github"
                     placeholder="https://github.com/..."
+                    ng-class="{invalid: resume.personalInfo.github && !isValidUrl(resume.personalInfo.github)}"
                   />
                 </div>
                 <div class="form-group full">
@@ -296,6 +247,7 @@
                     ng-model="resume.personalInfo.bio"
                     rows="3"
                     placeholder="Computer Engineering student passionate about..."
+                    maxlength="400"
                   ></textarea>
                 </div>
               </div>
@@ -325,7 +277,7 @@
                     <input
                       type="text"
                       ng-model="edu.degree"
-                      placeholder="B.Tech Computer Engineering"
+                      placeholder="B.Tech Computer Science"
                     />
                   </div>
                   <div class="form-group">
@@ -679,7 +631,7 @@
             </button>
           </div>
           <div class="modal-actions">
-            <button class="btn-primary" ng-click="downloadPDF()">
+            <button type="button" class="btn-primary" ng-click="downloadPDF()">
               Download PDF
             </button>
             <button class="btn-close" ng-click="showResume = false">×</button>
@@ -687,10 +639,35 @@
         </div>
         <div class="modal-body">
           <div id="resume-paper" class="resume" ng-class="template">
+            <!-- ========== MODERN ========== -->
             <div ng-if="template === 'modern'">
               <div class="resume-header modern">
-                <h1>{{ resume.personalInfo.fullName || 'Your Name' }}</h1>
-                <p class="title">Computer Engineering Student</p>
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 18px;
+                    justify-content: center;
+                    flex-wrap: wrap;
+                  "
+                >
+                  <img
+                    ng-if="resume.personalInfo.photo"
+                    ng-src="{{ resume.personalInfo.photo }}"
+                    alt="Photo"
+                    style="
+                      width: 78px;
+                      height: 78px;
+                      border-radius: 50%;
+                      object-fit: cover;
+                      border: 2px solid #395176;
+                    "
+                  />
+                  <div>
+                    <h1>{{ resume.personalInfo.fullName || 'Your Name' }}</h1>
+                    <p class="title">Computer Engineering Student</p>
+                  </div>
+                </div>
                 <div class="contact">
                   <span ng-if="resume.personalInfo.email"
                     >{{ resume.personalInfo.email }}</span
@@ -715,10 +692,12 @@
                   >
                 </div>
               </div>
+
               <div class="resume-section" ng-if="resume.personalInfo.bio">
                 <h2>Profile</h2>
                 <p>{{ resume.personalInfo.bio }}</p>
               </div>
+
               <div class="resume-section" ng-if="resume.education.length">
                 <h2>Education</h2>
                 <div ng-repeat="edu in resume.education">
@@ -729,9 +708,10 @@
                   </div>
                 </div>
               </div>
+
               <div
                 class="resume-section"
-                ng-if="resume.skills.technical.length || resume.skills.tools.length"
+                ng-if="resume.skills.technical.length || resume.skills.tools.length || resume.skills.soft.length"
               >
                 <h2>Skills</h2>
                 <p ng-if="resume.skills.technical.length">
@@ -746,6 +726,7 @@
                   ') }}
                 </p>
               </div>
+
               <div class="resume-section" ng-if="resume.projects.length">
                 <h2>Projects</h2>
                 <div ng-repeat="p in resume.projects">
@@ -757,6 +738,7 @@
                   <a ng-if="p.link" ng-href="{{ p.link }}">{{ p.link }}</a>
                 </div>
               </div>
+
               <div class="resume-section" ng-if="resume.experience.length">
                 <h2>Experience</h2>
                 <div ng-repeat="e in resume.experience">
@@ -767,6 +749,7 @@
                   <p>{{ e.description }}</p>
                 </div>
               </div>
+
               <div class="resume-section" ng-if="resume.certifications.length">
                 <h2>Certifications</h2>
                 <div ng-repeat="c in resume.certifications">
@@ -774,8 +757,10 @@
                   <div class="item-sub">
                     {{ c.organization }} | {{ c.date }}
                   </div>
+                  <a ng-if="c.link" ng-href="{{ c.link }}">{{ c.link }}</a>
                 </div>
               </div>
+
               <div class="resume-section" ng-if="resume.achievements.length">
                 <h2>Achievements</h2>
                 <ul>
@@ -784,54 +769,140 @@
               </div>
             </div>
 
+            <!-- ========== MINIMAL / PROFESSIONAL ========== -->
             <div ng-if="template === 'minimal' || template === 'professional'">
               <div class="resume-header">
-                <h1>{{ resume.personalInfo.fullName || 'Your Name' }}</h1>
-                <p>
-                  {{ resume.personalInfo.email }} | {{ resume.personalInfo.phone
-                  }} | {{ resume.personalInfo.location }}
-                </p>
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 16px;
+                    flex-wrap: wrap;
+                  "
+                >
+                  <img
+                    ng-if="resume.personalInfo.photo"
+                    ng-src="{{ resume.personalInfo.photo }}"
+                    alt="Photo"
+                    style="
+                      width: 70px;
+                      height: 70px;
+                      border-radius: 50%;
+                      object-fit: cover;
+                    "
+                  />
+                  <div>
+                    <h1>{{ resume.personalInfo.fullName || 'Your Name' }}</h1>
+                    <p>
+                      <span ng-if="resume.personalInfo.email"
+                        >{{ resume.personalInfo.email }}</span
+                      >
+                      <span ng-if="resume.personalInfo.phone">
+                        | {{ resume.personalInfo.phone }}</span
+                      >
+                      <span ng-if="resume.personalInfo.location">
+                        | {{ resume.personalInfo.location }}</span
+                      >
+                    </p>
+                    <p
+                      ng-if="resume.personalInfo.linkedin || resume.personalInfo.github"
+                    >
+                      <a
+                        ng-if="resume.personalInfo.linkedin"
+                        ng-href="{{ resume.personalInfo.linkedin }}"
+                        >LinkedIn</a
+                      >
+                      <span
+                        ng-if="resume.personalInfo.linkedin && resume.personalInfo.github"
+                      >
+                        •
+                      </span>
+                      <a
+                        ng-if="resume.personalInfo.github"
+                        ng-href="{{ resume.personalInfo.github }}"
+                        >GitHub</a
+                      >
+                    </p>
+                  </div>
+                </div>
               </div>
+
               <div class="resume-section" ng-if="resume.personalInfo.bio">
                 <h2>Profile</h2>
                 <p>{{ resume.personalInfo.bio }}</p>
               </div>
+
               <div class="resume-section" ng-if="resume.education.length">
                 <h2>Education</h2>
-                <div ng-repeat="edu in resume.education">
+                <div
+                  ng-repeat="edu in resume.education"
+                  style="margin-bottom: 6px"
+                >
                   <strong>{{ edu.degree }}</strong> – {{ edu.college }} ({{
-                  edu.year }}) {{ edu.score }}
+                  edu.year }})
+                  <span ng-if="edu.score"> • {{ edu.score }}</span>
                 </div>
               </div>
+
               <div
                 class="resume-section"
-                ng-if="resume.skills.technical.length"
+                ng-if="resume.skills.technical.length || resume.skills.tools.length || resume.skills.soft.length"
               >
                 <h2>Skills</h2>
-                {{ resume.skills.technical.concat(resume.skills.tools).join(' •
-                ') }}
+                <p ng-if="resume.skills.technical.length">
+                  <strong>Technical:</strong> {{ resume.skills.technical.join('
+                  • ') }}
+                </p>
+                <p ng-if="resume.skills.tools.length">
+                  <strong>Tools:</strong> {{ resume.skills.tools.join(' • ') }}
+                </p>
+                <p ng-if="resume.skills.soft.length">
+                  <strong>Soft Skills:</strong> {{ resume.skills.soft.join(' •
+                  ') }}
+                </p>
               </div>
+
               <div class="resume-section" ng-if="resume.projects.length">
                 <h2>Projects</h2>
-                <div ng-repeat="p in resume.projects">
-                  <strong>{{ p.name }}</strong> – {{ p.technologies }}<br />
+                <div
+                  ng-repeat="p in resume.projects"
+                  style="margin-bottom: 8px"
+                >
+                  <strong>{{ p.name }}</strong>
+                  <span ng-if="p.technologies"> – {{ p.technologies }}</span
+                  ><br />
                   {{ p.description }}
+                  <div ng-if="p.link">
+                    <a ng-href="{{ p.link }}">{{ p.link }}</a>
+                  </div>
                 </div>
               </div>
+
               <div class="resume-section" ng-if="resume.experience.length">
                 <h2>Experience</h2>
-                <div ng-repeat="e in resume.experience">
+                <div
+                  ng-repeat="e in resume.experience"
+                  style="margin-bottom: 8px"
+                >
                   <strong>{{ e.position }}</strong> at {{ e.company }} ({{
                   e.duration }})<br />
                   {{ e.description }}
                 </div>
               </div>
+
               <div class="resume-section" ng-if="resume.certifications.length">
                 <h2>Certifications</h2>
-                <div ng-repeat="c in resume.certifications">
+                <div
+                  ng-repeat="c in resume.certifications"
+                  style="margin-bottom: 4px"
+                >
                   {{ c.name }} – {{ c.organization }} ({{ c.date }})
+                  <span ng-if="c.link">
+                    • <a ng-href="{{ c.link }}">View</a></span
+                  >
                 </div>
               </div>
+
               <div class="resume-section" ng-if="resume.achievements.length">
                 <h2>Achievements</h2>
                 <ul>
@@ -845,6 +916,7 @@
     </div>
 
     <script src="../js/app.js"></script>
+    <script src="../Controllers/headerController.js"></script>
     <script src="../Controllers/resumeController.js"></script>
   </body>
 </html>

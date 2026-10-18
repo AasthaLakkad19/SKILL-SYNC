@@ -21,7 +21,8 @@
     <!-- Page specific styles -->
     <link rel="stylesheet" href="css/achievements.css" />
     <link rel="stylesheet" href="../css/desktop.css" />
-    
+    <link rel="stylesheet" href="../css/home.css" />
+
     <link rel="stylesheet" href="../css/mobile.css" />
     <link rel="stylesheet" href="../css/sidebar_header.css" />
   </head>
@@ -29,63 +30,8 @@
   <body ng-controller="AchievementsController">
     <div class="dashboard" ng-class="{'sidebar-open': sidebarOpen}">
       <!-- ================= HEADER ================= -->
-      <header class="top-header">
-        <div class="header-left">
-          <button
-            class="menu-btn"
-            ng-click="toggleSidebar()"
-            aria-label="Toggle navigation menu"
-          >
-            ☰
-          </button>
-
-          <div class="logo">
-            <img src="images/logo.png" alt="SkillSync Logo" class="logo-icon" />
-            𝗌𝗄𝗂𝗅𝗅𝗌𝗒𝗇𝖼
-          </div>
-        </div>
-
-        <!-- Search -->
-        <div class="search-box">
-          <span aria-hidden="true">⌕</span>
-          <input
-            type="text"
-            placeholder="Search skills, students..."
-            ng-model="searchText"
-            aria-label="Search skills and students"
-          />
-        </div>
-
-        <!-- Header Right -->
-        <div class="header-right">
-          <button class="header-icon" aria-label="Notifications">🔔</button>
-          <button class="header-icon" aria-label="Messages">💬</button>
-
-          <div class="token-display">
-            <span aria-hidden="true">🪙</span>
-            <strong>{{tokens}}</strong>
-          </div>
-
-          <div class="profile-menu" ng-click="toggleProfileMenu()">
-            <div class="profile-picture" aria-hidden="true">A</div>
-
-            <span class="profile-name">User</span>
-            <span class="arrow" aria-hidden="true">⌄</span>
-
-            <div class="profile-dropdown" ng-show="profileOpen">
-              <div class="profile-info">
-                <strong>User</strong>
-                <span>abc@example.com</span>
-              </div>
-
-              <hr />
-
-              <a href="profile.html">👤 My Profile</a>
-              <a href="settings.html">⚙ Settings</a>
-              <a href="#" ng-click="logout()">↪ Sign Out</a>
-            </div>
-          </div>
-        </div>
+      <header class="top-header" ng-controller="HeaderController">
+        <div ng-include="'../components/header.html'"></div>
       </header>
 
       <!-- ================= SIDEBAR ================= -->
@@ -347,7 +293,8 @@
 
     <!-- ================= SCRIPTS ================= -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
-    <script src="js/app.js"></script>
-    <script src="Controllers/achievementsController.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../Controllers/achievementsController.js"></script>
+    <script src="../Controllers/headerController.js"></script>
   </body>
 </html>
