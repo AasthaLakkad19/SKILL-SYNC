@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en" ng-app="skillSyncApp">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>SkillSync | Learn Share Connect</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+
+    <!-- CSS -->
+    <link
+      rel="stylesheet"
+      href="../css/desktop.css"
+      media="screen and (min-width:769px)"
+    />
+    <link rel="stylesheet" href="../css/login.css" />
+  </head>
+
+  <body ng-controller="LoginController">
+    <!-- BACKGROUND -->
+    <div class="background">
+      <div class="blur-circle circle-one"></div>
+      <div class="blur-circle circle-two"></div>
+      <div class="blur-circle circle-three"></div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="main-container">
+      <!-- LEFT SECTION -->
+      <section class="welcome-section">
+        <!-- LOGO -->
+        <div class="brand">
+          <img src="/images/logo.png" class="brand-logo" alt="SkillSync" />
+          <span>skillsync</span>
+        </div>
+
+        <!-- TOKEN BADGE -->
+        <div class="token-badge">
+          <span>✦</span>
+
+          {{ freeTokens }} Free Skill Tokens
+        </div>
+
+        <!-- HEADING -->
+        <h1>
+          Learn.
+          <br />
+
+          Share.
+          <br />
+
+          <span>Connect.</span>
+        </h1>
+
+        <!-- DESCRIPTION -->
+        <p class="description">
+          Discover new skills, share your knowledge, and connect with students
+          who can help you build something amazing.
+        </p>
+
+        <!-- STATS -->
+        <div class="stats">
+          <div class="stat">
+            <strong>{{ freeTokens }}</strong>
+
+            <span>Free Tokens</span>
+          </div>
+
+          <div class="stat-line"></div>
+
+          <div class="stat">
+            <strong>∞</strong>
+
+            <span>Skills to Learn</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SKILL ANIMATIONS -->
+      <div class="skills-animation">
+        <!-- Orbit -->
+        <div class="orbit orbit-one"></div>
+
+        <div class="orbit orbit-two"></div>
+
+        <!-- AI -->
+        <div class="skill-card skill-ai">
+          <div class="skill-icon ai-icon">AI</div>
+
+          <span class="skill-name"> AI </span>
+        </div>
+
+        <!-- DESIGN -->
+        <div class="skill-card skill-design">
+          <div class="skill-icon design-icon">✦</div>
+
+          <span class="skill-name"> DESIGN </span>
+        </div>
+
+        <!-- PYTHON -->
+        <div class="skill-card skill-python">
+          <div class="skill-icon python-icon">🐍</div>
+
+          <span class="skill-name"> PYTHON </span>
+        </div>
+
+        <!-- MARKETING -->
+        <div class="skill-card skill-marketing">
+          <div class="skill-icon marketing-icon">↗</div>
+
+          <span class="skill-name"> MARKETING </span>
+        </div>
+
+        <!-- CENTER TOKEN -->
+        <div class="center-token">
+          <span>✦</span>
+        </div>
+      </div>
+
+      <!-- LOGIN CARD -->
+      <section class="login-card">
+        <div class="card-top-line"></div>
+
+        <!-- LOGIN HEADER -->
+        <div class="login-header">
+          <div class="mini-logo">S</div>
+
+          <h2>Welcome Back</h2>
+
+          <p>Sign in to continue your SkillSync journey.</p>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form name="loginForm" ng-submit="login()" novalidate>
+          <!-- EMAIL -->
+          <div class="input-group">
+            <label for="email"> Email Address </label>
+
+            <div class="input-box">
+              <span class="input-icon"> ✉ </span>
+
+              <input
+                type="email"
+                id="email"
+                name="email"
+                ng-model="user.email"
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+
+            <!-- Email Error -->
+            <small
+              class="error"
+              ng-show="loginForm.email.$touched && loginForm.email.$invalid"
+            >
+              Please enter a valid email address.
+            </small>
+          </div>
+
+          <!-- PASSWORD -->
+          <div class="input-group">
+            <label for="password"> Password </label>
+
+            <div class="input-box">
+              <span class="input-icon"> 🔒 </span>
+
+              <input
+                type="{{ passwordInputType }}"
+                id="password"
+                name="password"
+                ng-model="user.password"
+                placeholder="Enter your password"
+                required
+              />
+
+              <button
+                type="button"
+                class="password-button"
+                ng-click="togglePassword()"
+              >
+                {{ passwordVisible ? '🙈' : '👁' }}
+              </button>
+            </div>
+
+            <!-- Password Error -->
+            <small
+              class="error"
+              ng-show="loginForm.password.$touched && loginForm.password.$invalid"
+            >
+              Password is required.
+            </small>
+          </div>
+
+          <!-- OPTIONS -->
+          <div class="form-options">
+            <label class="remember">
+              <input type="checkbox" ng-model="user.remember" />
+
+              <span> Remember me </span>
+            </label>
+
+            <a href="#"> Forgot Password? </a>
+          </div>
+
+          <!-- LOGIN BUTTON -->
+          <button
+            type="submit"
+            class="login-button"
+            id="loginButton"
+            ng-disabled="isLoading"
+            ng-class="{ 'loading': isLoading }"
+          >
+            <span> {{ loginButtonText }} </span>
+
+            <span class="button-arrow"> {{ isLoading ? '✦' : '→' }} </span>
+          </button>
+        </form>
+
+        <!-- DIVIDER -->
+        <div class="divider">
+          <span> or continue with </span>
+        </div>
+
+        <!-- GOOGLE -->
+        <button type="button" class="google-button" ng-click="googleLogin()">
+          <span class="google-logo"> G </span>
+
+          Continue with Google
+        </button>
+
+        <!-- SIGN UP -->
+        <p class="signup-text">
+          Don't have an account?
+
+          <a href="signup.html"> Create Account </a>
+        </p>
+      </section>
+    </main>
+
+    <!-- AngularJS App -->
+    <script src="../js/app.js"></script>
+
+    <!-- Login Controller -->
+    <script src="../Controllers/loginController.js"></script>
+  </body>
+</html>

@@ -1,0 +1,865 @@
+/* =====================================================
+   SKILLSYNC LOGIN PAGE
+
+   TABLE OF CONTENTS
+   1. Design tokens
+   2. Reset & base
+   3. Background
+   4. Layout
+   5. Welcome section (brand, heading, badge)
+   6. Floating skills animation
+   7. Login card (header, form, buttons, footer)
+   8. Utilities & states
+   9. Responsive (tablet, mobile, small mobile)
+   ===================================================== */
+
+/* =====================================================
+   1. DESIGN TOKENS
+   ===================================================== */
+
+:root {
+  /* Fonts */
+  --font-main: "Poppins", sans-serif;
+
+  /* Text colors */
+  --text-navy: #102f5b;
+  --text-body: #122d55;
+  --text-muted: #53647b;
+  --text-label: #1d2f48;
+  --text-subtle: #69768a;
+  --text-link: #657286;
+  --text-input: #243852;
+  --text-placeholder: #9ba5b2;
+
+  /* Accent colors */
+  --accent: #7187d3;
+  --accent-light: #8498dd;
+  --accent-link: #536cb7;
+  --accent-purple: #7967c9;
+  --accent-focus: #7b8ed5;
+
+  /* Surfaces & borders */
+  --page-bg: #edf4ff;
+  --card-bg: rgba(255, 255, 255, 0.94);
+  --border-input: #d9dfe8;
+  --border-light: #dfe3e8;
+
+  /* Status */
+  --error: #d85c6a;
+
+  /* Radii */
+  --radius-sm: 10px;
+  --radius-md: 25px;
+  --radius-pill: 40px;
+
+  /* Motion */
+  --transition: 0.25s;
+}
+
+/* =====================================================
+   2. RESET & BASE
+   ===================================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-main);
+  color: var(--text-body);
+  background: var(--page-bg);
+  overflow-x: hidden;
+}
+
+/* =====================================================
+   3. BACKGROUND
+   ===================================================== */
+
+.background {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 15% 20%,
+      rgba(205, 228, 255, 0.95),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 88% 25%,
+      rgba(238, 220, 255, 0.9),
+      transparent 35%
+    ),
+    linear-gradient(135deg, #eef7ff 0%, #e9f2ff 45%, #f3edff 100%);
+}
+
+.blur-circle {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.35;
+}
+
+.circle-one {
+  width: 450px;
+  height: 450px;
+  top: -180px;
+  left: -120px;
+  background: #bcdcff;
+}
+
+.circle-two {
+  width: 420px;
+  height: 420px;
+  top: 100px;
+  right: -130px;
+  background: #ddd0ff;
+}
+
+.circle-three {
+  width: 500px;
+  height: 300px;
+  bottom: -180px;
+  left: 30%;
+  background: #cbdfff;
+}
+
+/* =====================================================
+   4. LAYOUT
+   ===================================================== */
+
+.main-container {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(450px, 1fr) minmax(430px, 0.8fr);
+  align-items: center;
+  column-gap: 80px;
+  width: min(1400px, 94%);
+  min-height: 100vh;
+  margin: auto;
+  padding: 55px 45px;
+}
+
+/* =====================================================
+   5. WELCOME SECTION
+   ===================================================== */
+
+.welcome-section {
+  position: relative;
+  z-index: 2;
+  max-width: 590px;
+}
+
+/* ---- Brand ---- */
+
+/* ---- Brand ---- */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;                 /* closer logo + text */
+  margin-bottom: 55px;
+  font-size: 30px;
+  font-weight: 700;
+  color: #102e58;
+}
+
+.brand-logo {
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* ---- Heading ---- */
+
+.welcome-section h1 {
+  margin-bottom: 28px;
+  font-size: clamp(58px, 6vw, 86px);
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -3px;
+  color: var(--text-navy);
+}
+
+.welcome-section h1 span {
+  color: #12345f;
+}
+
+/* ---- Description ---- */
+
+.description {
+  max-width: 500px;
+  margin-bottom: 30px;
+  font-size: 19px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+/* ---- Token badge ---- */
+
+.token-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin: 5px 0 28px;
+  padding: 13px 23px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(
+    135deg,
+    rgba(218, 229, 255, 0.95),
+    rgba(228, 220, 255, 0.95)
+  );
+  color: #182f57;
+  font-size: 17px;
+  font-weight: 600;
+  box-shadow: 0 8px 25px rgba(90, 110, 170, 0.08);
+}
+
+.token-badge span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #e5dfff;
+  color: #7564c9;
+  font-size: 21px;
+}
+
+/* =====================================================
+   6. FLOATING SKILLS ANIMATION
+   ===================================================== */
+
+.skills-animation {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* ---- Orbits ---- */
+
+.orbit {
+  position: absolute;
+  border: 1px solid rgba(126, 147, 190, 0.15);
+  border-radius: 50%;
+}
+
+/* Orbits and center token share one center point,
+   sitting in the empty gap between the two columns */
+.orbit-one,
+.orbit-two,
+.center-token {
+  top: 46%;
+  left: 47%;
+  transform: translate(-50%, -50%);
+}
+
+.orbit-one {
+  width: 360px;
+  height: 360px;
+}
+
+.orbit-two {
+  width: 230px;
+  height: 230px;
+}
+
+/* ---- Center token ---- */
+
+.center-token {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e6edff, #eee7ff);
+  color: var(--accent-purple);
+  font-size: 27px;
+  box-shadow: 0 15px 35px rgba(80, 100, 160, 0.12);
+}
+
+/* ---- Skill cards (shared) ---- */
+
+.skill-card {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 125px;
+  padding: 12px 17px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  color: #172f55;
+  font-weight: 600;
+  box-shadow: 0 15px 35px rgba(55, 79, 125, 0.14);
+  animation: floating 4s ease-in-out infinite;
+}
+
+/* ---- Skill cards (positions) ---- */
+
+/* Positions are % of .main-container; the gap between
+   the columns is roughly 36%-57% wide */
+.skill-ai {
+  top: 30%;
+  left: 46%;
+}
+
+.skill-design {
+  top: 14%;
+  left: 36%;
+  animation-delay: 0.8s;
+}
+
+.skill-python {
+  top: 55%;
+  left: 37%;
+  animation-delay: 1.3s;
+}
+
+.skill-marketing {
+  top: 70%;
+  left: 46%;
+  animation-delay: 1.8s;
+}
+
+/* ---- Skill icons ---- */
+
+.skill-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #edf1ff;
+  color: #5368b6;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.ai-icon {
+  color: #536f9c;
+}
+.design-icon {
+  color: #765bc1;
+}
+.python-icon {
+  font-size: 22px;
+}
+.marketing-icon {
+  color: #7962c9;
+  font-size: 22px;
+}
+
+/* ---- Animation ---- */
+
+@keyframes floating {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* =====================================================
+   7. LOGIN CARD
+   ===================================================== */
+
+.login-card {
+  position: relative;
+  z-index: 5;
+  justify-self: center;
+  width: 100%;
+  max-width: 500px;
+  padding: 48px 43px 38px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 25px 70px rgba(60, 82, 125, 0.18);
+}
+
+/* ---- Header ---- */
+
+.login-header {
+  margin-bottom: 30px;
+}
+
+.login-header h2 {
+  margin-bottom: 9px;
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--text-navy);
+}
+
+.login-header p {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-subtle);
+}
+
+/* ---- Inputs ---- */
+
+.input-group {
+  margin-bottom: 21px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-label);
+}
+
+.input-box {
+  position: relative;
+  width: 100%;
+}
+
+.input-box input {
+  width: 100%;
+  height: 57px;
+  padding: 0 17px;
+  border: 1.5px solid var(--border-input);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  outline: none;
+  font-family: var(--font-main);
+  font-size: 15px;
+  color: var(--text-input);
+  transition: var(--transition);
+}
+
+.input-box input::placeholder {
+  color: var(--text-placeholder);
+}
+
+.input-box input:focus {
+  border-color: var(--accent-focus);
+  box-shadow: 0 0 0 3px rgba(123, 142, 213, 0.12);
+}
+
+.password-button {
+  position: absolute;
+  top: 50%;
+  right: 13px;
+  transform: translateY(-50%);
+  padding: 5px;
+  border: none;
+  background: transparent;
+  font-size: 19px;
+  color: #68778a;
+  cursor: pointer;
+}
+
+/* ---- Remember me / forgot password ---- */
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 3px 0 24px;
+}
+
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  color: #35445a;
+  cursor: pointer;
+}
+
+.remember input {
+  width: 18px;
+  height: 18px;
+  accent-color: #778bd4;
+  cursor: pointer;
+}
+
+.form-options a {
+  font-size: 14px;
+  color: var(--text-link);
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+.form-options a:hover {
+  color: #536bb7;
+}
+
+/* ---- Primary button ---- */
+
+.login-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  height: 59px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--accent-light), var(--accent));
+  font-family: var(--font-main);
+  font-size: 17px;
+  font-weight: 500;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(104, 124, 201, 0.25);
+  transition: var(--transition);
+}
+
+.login-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(104, 124, 201, 0.3);
+}
+
+.login-button:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.button-arrow {
+  font-size: 20px;
+}
+
+.login-button.loading {
+  pointer-events: none;
+  animation: buttonPulse 1s infinite;
+}
+
+@keyframes buttonPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* ---- Divider ---- */
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 25px 0;
+  font-size: 14px;
+  color: #7d8795;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border-light);
+}
+
+.divider span {
+  white-space: nowrap;
+}
+
+/* ---- Google button ---- */
+
+.google-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  width: 100%;
+  height: 56px;
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  font-family: var(--font-main);
+  font-size: 15px;
+  font-weight: 500;
+  color: #29364a;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.google-button:hover {
+  border-color: #c8ced8;
+  background: #f9fafc;
+}
+
+.google-logo {
+  font-family: Arial, sans-serif;
+  font-size: 23px;
+  font-weight: 700;
+  color: #4285f4;
+}
+
+/* ---- Sign up ---- */
+
+.signup-text {
+  margin-top: 25px;
+  text-align: center;
+  font-size: 14px;
+  color: #687589;
+}
+
+.signup-text a {
+  font-weight: 600;
+  color: var(--accent-link);
+  text-decoration: none;
+}
+
+.signup-text a:hover {
+  text-decoration: underline;
+}
+
+/* =====================================================
+   8. UTILITIES & STATES
+   ===================================================== */
+
+/* Validation error */
+.error {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--error);
+}
+
+/* Elements hidden in the current design */
+.stats,
+.card-top-line,
+.mini-logo,
+.input-icon {
+  display: none;
+}
+
+/* Keyboard focus */
+.login-button:focus-visible,
+.google-button:focus-visible,
+.password-button:focus-visible,
+.form-options a:focus-visible,
+.signup-text a:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 3px;
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .skill-card,
+  .login-button.loading {
+    animation: none;
+  }
+
+  .login-button:hover {
+    transform: none;
+  }
+}
+
+/* =====================================================
+   9. RESPONSIVE
+   ===================================================== */
+
+/* ---- Narrow desktop: gap is too small for floating cards ---- */
+
+@media (max-width: 1280px) {
+  .skills-animation {
+    display: none;
+  }
+}
+
+/* ---- Tablet ---- */
+
+@media (max-width: 1100px) {
+  .main-container {
+    grid-template-columns: minmax(380px, 1fr) minmax(390px, 0.9fr);
+    column-gap: 35px;
+    padding: 40px 25px;
+  }
+
+  .welcome-section h1 {
+    font-size: 64px;
+  }
+
+  .login-card {
+    padding: 40px 35px 32px;
+  }
+}
+
+/* ---- Short desktop screens: keep the card within the viewport ---- */
+
+@media (min-width: 769px) and (max-height: 850px) {
+  .main-container {
+    padding-top: 30px;
+    padding-bottom: 30px;
+  }
+
+  .login-card {
+    padding: 34px 40px 28px;
+  }
+
+  .login-header {
+    margin-bottom: 20px;
+  }
+
+  .login-header h2 {
+    font-size: 34px;
+  }
+
+  .input-group {
+    margin-bottom: 14px;
+  }
+
+  .input-box input {
+    height: 50px;
+  }
+  .login-button {
+    height: 52px;
+  }
+  .google-button {
+    height: 50px;
+  }
+
+  .divider {
+    margin: 18px 0;
+  }
+
+  .signup-text {
+    margin-top: 18px;
+  }
+}
+
+/* ---- Mobile ---- */
+
+@media (max-width: 768px) {
+  body {
+    overflow-y: auto;
+  }
+
+  .main-container {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 35px;
+    width: 100%;
+    padding: 30px 20px 40px;
+  }
+
+  .skills-animation {
+    display: none;
+  }
+
+  /* Welcome */
+  .welcome-section {
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .brand {
+    margin-bottom: 30px;
+    font-size: 25px;
+  }
+
+  .brand-logo {
+    width: 48px;
+    height: 48px;
+    font-size: 26px;
+  }
+
+  .welcome-section h1 {
+    font-size: 50px;
+    line-height: 1;
+    letter-spacing: -2px;
+  }
+
+  .description {
+    max-width: 450px;
+    margin: 0 auto 25px;
+    font-size: 15px;
+  }
+
+  .token-badge {
+    padding: 10px 17px;
+    font-size: 14px;
+  }
+
+  /* Login card */
+  .login-card {
+    max-width: 100%;
+    padding: 32px 24px 28px;
+    border-radius: 22px;
+  }
+
+  .login-header h2 {
+    font-size: 31px;
+  }
+
+  .login-header p {
+    font-size: 14px;
+  }
+
+  .input-box input {
+    height: 54px;
+  }
+  .login-button {
+    height: 56px;
+  }
+  .google-button {
+    height: 54px;
+  }
+}
+
+/* ---- Small mobile ---- */
+
+@media (max-width: 420px) {
+  .main-container {
+    padding: 22px 15px 30px;
+  }
+
+  .welcome-section h1 {
+    font-size: 43px;
+  }
+
+  .description {
+    font-size: 14px;
+  }
+
+  .login-card {
+    padding: 28px 20px 25px;
+  }
+
+  .login-header h2 {
+    font-size: 28px;
+  }
+
+  .form-options {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .form-options a {
+    font-size: 12px;
+  }
+}
+
+/* Slightly reduce spacing for signup page */
+.login-card .input-group {
+  margin-bottom: 16px;
+}
