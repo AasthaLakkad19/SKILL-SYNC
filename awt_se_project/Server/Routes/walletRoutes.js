@@ -1,73 +1,17 @@
 const express = require("express");
-
 const router = express.Router();
+const { protect } = require("../Middleware/auth");
+const { getWallet, spendTokens, getTransactions } = require("../controllers/walletController");
 
+router.use(protect);
 
-// ============================================================
-// CONTROLLER
-// ============================================================
+// The wallet always belongs to the logged-in user (no userId in the URL).
+router.get("/", getWallet);
+router.get("/transactions", getTransactions);
+router.post("/spend", spendTokens);
 
-const {
-
-  getWallet,
-
-  earnTokens,
-
-  spendTokens,
-
-  getTransactions
-
-} = require("../controllers/walletController");
-
-
-// ============================================================
-// GET WALLET
-// ============================================================
-
-// Example:
-// GET /api/wallet/demo-user
-
-router.get(
-  "/:userId",
-  getWallet
-);
-
-
-// ============================================================
-// GET TRANSACTIONS
-// ============================================================
-
-// Example:
-// GET /api/wallet/demo-user/transactions
-
-router.get(
-  "/:userId/transactions",
-  getTransactions
-);
-
-
-// ============================================================
-// EARN TOKENS
-// ============================================================
-
-// POST /api/wallet/earn
-
-router.post(
-  "/earn",
-  earnTokens
-);
-
-
-// ============================================================
-// SPEND TOKENS
-// ============================================================
-
-// POST /api/wallet/spend
-
-router.post(
-  "/spend",
-  spendTokens
-);
-
+// NOTE: there is intentionally no public "earn" route. Tokens must only be
+// awarded by the server (see awardTokens in walletController) after a real
+// action such as completing a teaching session.
 
 module.exports = router;

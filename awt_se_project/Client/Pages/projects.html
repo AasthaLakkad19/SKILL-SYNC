@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en" ng-app="skillSyncApp">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>SkillSync - My Projects</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/desktop.css" />
+    <link rel="stylesheet" href="../css/home.css" />
+    <link rel="stylesheet" href="../css/sidebar_header.css" />
+    <link rel="stylesheet" href="../css/projects.css" />
+
+    <!-- AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../Controllers/headerController.js"></script>
+    <script src="../Controllers/projectsController.js"></script>
+    <script src="../Controllers/chatbotController.js"></script>
+  </head>
+
+  <body ng-controller="ProjectsController">
+    <div class="dashboard" ng-class="{'sidebar-open': sidebarOpen}">
+      <!-- ================= HEADER ================= -->
+      <header class="top-header" ng-controller="HeaderController">
+        <div ng-include="'../components/header.html'"></div>
+      </header>
+
+      <!-- ================= SIDEBAR ================= -->
+      <aside class="sidebar" ng-class="{'sidebar-open': sidebarOpen}">
+        <nav>
+          <a href="firstLogin.html" class="nav-item">
+            <span>🏠</span><span>Home</span>
+          </a>
+          <a href="learnSkills.html" class="nav-item">
+            <span>📚</span><span>Learn Skills</span>
+          </a>
+          <a href="teachSkills.html" class="nav-item">
+            <span>🎓</span><span>Teach Skills</span>
+          </a>
+          <a href="findTeam.html" class="nav-item">
+            <span>👥</span><span>Find Teammates</span>
+          </a>
+          <a href="profile.html" class="nav-item">
+            <span>👤</span><span>My Profile</span>
+          </a>
+
+          <div class="nav-submenu">
+            <a href="achievements.html"> 🏆 Achievements </a>
+            <a href="wallet.html"> 🪙 Skill Wallet </a>
+            <a href="projects.html" class="active"> 📂 My Projects </a>
+            <a href="buildResume.html"> 📄 Build Resume </a>
+          </div>
+
+          <a href="settings.html" class="nav-item">
+            <span>⚙</span><span>Settings</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- ================= MAIN CONTENT ================= -->
+      <main class="main-content">
+        <!-- Page heading -->
+        <section class="pj-hero">
+          <div>
+            <span class="welcome-label">MY PROJECTS</span>
+            <h1>Build it. Show it. <span>Share it.</span></h1>
+            <p>
+              Organise your work, track progress with your team and turn
+              finished projects into portfolio pieces.
+            </p>
+          </div>
+          <button class="pj-btn pj-btn-light" ng-click="openCreate()">
+            ＋ New project
+          </button>
+        </section>
+
+        <!-- Stats -->
+        <section class="pj-stats">
+          <div class="pj-stat">
+            <span class="pj-stat-icon purple">📂</span>
+            <div>
+              <strong>{{projects.length}}</strong>
+              <span>Total projects</span>
+            </div>
+          </div>
+          <div class="pj-stat">
+            <span class="pj-stat-icon orange">🚧</span>
+            <div>
+              <strong>{{countByStatus('in-progress')}}</strong>
+              <span>In progress</span>
+            </div>
+          </div>
+          <div class="pj-stat">
+            <span class="pj-stat-icon green">✅</span>
+            <div>
+              <strong>{{countByStatus('completed')}}</strong>
+              <span>Completed</span>
+            </div>
+          </div>
+          <div class="pj-stat">
+            <span class="pj-stat-icon blue">🤝</span>
+            <div>
+              <strong>{{totalTeammates()}}</strong>
+              <span>Collaborators</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Projects list -->
+        <section class="section">
+          <div class="section-heading">
+            <div>
+              <span class="section-label">YOUR WORK</span>
+              <h2>All projects</h2>
+              <p>Projects you created and projects you joined.</p>
+            </div>
+          </div>
+
+          <div class="pj-toolbar">
+            <div class="pj-search">
+              <span aria-hidden="true">⌕</span>
+              <input
+                type="text"
+                placeholder="Search by title or technology..."
+                ng-model="search.text"
+                aria-label="Search projects"
+              />
+            </div>
+
+            <div class="pj-tabs" role="tablist">
+              <button
+                role="tab"
+                ng-class="{'active': statusFilter === 'all'}"
+                ng-click="statusFilter = 'all'"
+              >
+                All <em>{{projects.length}}</em>
+              </button>
+              <button
+                role="tab"
+                ng-class="{'active': statusFilter === 'not-started'}"
+                ng-click="statusFilter = 'not-started'"
+              >
+                Not started <em>{{countByStatus('not-started')}}</em>
+              </button>
+              <button
+                role="tab"
+                ng-class="{'active': statusFilter === 'in-progress'}"
+                ng-click="statusFilter = 'in-progress'"
+              >
+                In progress <em>{{countByStatus('in-progress')}}</em>
+              </button>
+              <button
+                role="tab"
+                ng-class="{'active': statusFilter === 'completed'}"
+                ng-click="statusFilter = 'completed'"
+              >
+                Completed <em>{{countByStatus('completed')}}</em>
+              </button>
+            </div>
+
+            <select
+              class="pj-select"
+              ng-model="sortBy"
+              aria-label="Sort projects"
+            >
+              <option value="-updated">Recently updated</option>
+              <option value="title">Title A–Z</option>
+              <option value="-progress">Highest progress</option>
+            </select>
+          </div>
+
+          <!-- Cards -->
+          <div class="pj-grid" ng-if="(projects | filter:projectFilter).length">
+            <article
+              class="pj-card"
+              ng-repeat="p in projects | filter:projectFilter | orderBy:sortBy track by p.id"
+            >
+              <div class="pj-card-top">
+                <span class="pj-status" ng-class="p.status">
+                  {{statusLabel(p.status)}}
+                </span>
+                <span class="pj-role"
+                  >{{p.owner ? 'Created by you' : 'Joined'}}</span
+                >
+              </div>
+
+              <h3>{{p.title}}</h3>
+              <p class="pj-desc">{{p.description}}</p>
+
+              <div class="pj-tech">
+                <span ng-repeat="t in p.tech track by $index">{{t}}</span>
+              </div>
+
+              <div class="pj-progress">
+                <div class="pj-progress-head">
+                  <span>Progress</span>
+                  <strong>{{progress(p)}}%</strong>
+                </div>
+                <div
+                  class="progress-bar"
+                  role="progressbar"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="{{progress(p)}}"
+                >
+                  <div
+                    class="progress-fill"
+                    ng-style="{'width': progress(p) + '%'}"
+                  ></div>
+                </div>
+              </div>
+
+              <div class="pj-card-foot">
+                <div class="pj-avatars" title="Team members">
+                  <span
+                    class="pj-avatar"
+                    ng-repeat="m in p.team | limitTo:4"
+                    title="{{m.name}} · {{m.role}}"
+                    >{{m.name.charAt(0)}}</span
+                  >
+                  <span class="pj-avatar more" ng-if="p.team.length > 4"
+                    >+{{p.team.length - 4}}</span
+                  >
+                </div>
+
+                <div class="pj-links">
+                  <a
+                    ng-if="p.github"
+                    ng-href="{{p.github}}"
+                    target="_blank"
+                    rel="noopener"
+                    aria-label="GitHub repository"
+                    title="GitHub repository"
+                    >💻</a
+                  >
+                  <a
+                    ng-if="p.demo"
+                    ng-href="{{p.demo}}"
+                    target="_blank"
+                    rel="noopener"
+                    aria-label="Live demo"
+                    title="Live demo"
+                    >🌐</a
+                  >
+                </div>
+              </div>
+
+              <div class="pj-actions">
+                <button class="pj-btn pj-btn-primary" ng-click="openDetails(p)">
+                  View details
+                </button>
+                <button
+                  class="pj-btn pj-btn-ghost"
+                  ng-click="openEdit(p)"
+                  ng-if="p.owner"
+                >
+                  Edit
+                </button>
+                <button
+                  class="pj-btn pj-btn-danger"
+                  ng-click="askDelete(p)"
+                  ng-if="p.owner"
+                >
+                  Delete
+                </button>
+              </div>
+            </article>
+          </div>
+
+          <!-- Empty state -->
+          <div
+            class="empty-project pj-empty"
+            ng-if="loaded && !(projects | filter:projectFilter).length"
+          >
+            <div class="empty-icon" aria-hidden="true">📂</div>
+            <div>
+              <h2>
+                {{projects.length ? 'No projects match your filters' : 'Your
+                project space is waiting'}}
+              </h2>
+              <p>
+                {{projects.length ? 'Try a different search or switch the status
+                tab.' : 'Create your first project and invite students with the
+                skills you need.'}}
+              </p>
+            </div>
+            <button class="pj-btn pj-btn-primary" ng-click="openCreate()">
+              Create project
+            </button>
+          </div>
+        </section>
+
+        <!-- Find collaborators -->
+        <section class="section">
+          <div class="section-heading">
+            <div>
+              <span class="section-label">COLLABORATE</span>
+              <h2>Find collaborators</h2>
+              <p>Students whose skills fit your open projects.</p>
+            </div>
+            <a href="findTeam.html">Browse all students →</a>
+          </div>
+
+          <div class="pj-collab-grid">
+            <div class="pj-collab" ng-repeat="c in collaborators track by c.id">
+              <span class="pj-avatar lg">{{c.name.charAt(0)}}</span>
+              <div class="pj-collab-info">
+                <h3>{{c.name}}</h3>
+                <span>{{c.role}}</span>
+                <div class="pj-tech small">
+                  <span ng-repeat="s in c.skills track by $index">{{s}}</span>
+                </div>
+              </div>
+              <button
+                class="pj-btn"
+                ng-class="c.invited ? 'pj-btn-ghost' : 'pj-btn-primary'"
+                ng-click="toggleInvite(c)"
+              >
+                {{c.invited ? 'Invited' : 'Invite'}}
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- ================= DETAILS MODAL ================= -->
+    <div class="pj-overlay" ng-if="detail" ng-click="closeDetails()">
+      <div
+        class="pj-modal wide"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Project details"
+        ng-click="$event.stopPropagation()"
+      >
+        <button class="pj-close" ng-click="closeDetails()" aria-label="Close">
+          ✕
+        </button>
+
+        <div class="pj-card-top">
+          <span class="pj-status" ng-class="detail.status">
+            {{statusLabel(detail.status)}}
+          </span>
+          <span class="pj-role"
+            >{{detail.owner ? 'Created by you' : 'Joined'}}</span
+          >
+        </div>
+        <h2 class="pj-modal-title">{{detail.title}}</h2>
+        <p class="pj-desc full">{{detail.description}}</p>
+
+        <div class="pj-tech">
+          <span ng-repeat="t in detail.tech track by $index">{{t}}</span>
+        </div>
+
+        <div class="pj-detail-links">
+          <a
+            ng-if="detail.github"
+            ng-href="{{detail.github}}"
+            target="_blank"
+            rel="noopener"
+            >💻 GitHub repository</a
+          >
+          <a
+            ng-if="detail.demo"
+            ng-href="{{detail.demo}}"
+            target="_blank"
+            rel="noopener"
+            >🌐 Live demo</a
+          >
+          <span ng-if="!detail.github && !detail.demo" class="pj-muted"
+            >No links added yet.</span
+          >
+        </div>
+
+        <div class="pj-detail-cols">
+          <!-- Milestones -->
+          <div>
+            <div class="pj-progress-head">
+              <h3>Milestones</h3>
+              <strong>{{progress(detail)}}%</strong>
+            </div>
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                ng-style="{'width': progress(detail) + '%'}"
+              ></div>
+            </div>
+
+            <ul class="pj-milestones">
+              <li ng-repeat="m in detail.milestones track by $index">
+                <label>
+                  <input
+                    type="checkbox"
+                    ng-model="m.done"
+                    ng-change="milestoneChanged(detail)"
+                  />
+                  <span ng-class="{'done': m.done}">{{m.title}}</span>
+                </label>
+              </li>
+            </ul>
+            <p class="pj-muted" ng-if="!detail.milestones.length">
+              No milestones yet. Edit the project to add some.
+            </p>
+          </div>
+
+          <!-- Team -->
+          <div>
+            <h3>Team</h3>
+            <ul class="pj-team">
+              <li ng-repeat="m in detail.team track by $index">
+                <span class="pj-avatar">{{m.name.charAt(0)}}</span>
+                <div>
+                  <strong>{{m.name}}</strong>
+                  <span>{{m.role}}</span>
+                  <small>{{m.contribution}}</small>
+                </div>
+                <button
+                  class="pj-icon-btn"
+                  ng-if="detail.owner && !$first"
+                  ng-click="removeMember(detail, $index)"
+                  aria-label="Remove {{m.name}}"
+                  title="Remove member"
+                >
+                  ✕
+                </button>
+              </li>
+            </ul>
+
+            <form
+              class="pj-add-member"
+              ng-if="detail.owner"
+              ng-submit="addMember(detail)"
+            >
+              <input
+                type="text"
+                placeholder="Name"
+                ng-model="newMember.name"
+                required
+              />
+              <input
+                type="text"
+                placeholder="Role (e.g. Backend)"
+                ng-model="newMember.role"
+              />
+              <button class="pj-btn pj-btn-primary" type="submit">Add</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= CREATE / EDIT MODAL ================= -->
+    <div class="pj-overlay" ng-if="formOpen" ng-click="closeForm()">
+      <div
+        class="pj-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="{{editing ? 'Edit project' : 'New project'}}"
+        ng-click="$event.stopPropagation()"
+      >
+        <button class="pj-close" ng-click="closeForm()" aria-label="Close">
+          ✕
+        </button>
+        <h2 class="pj-modal-title">
+          {{editing ? 'Edit project' : 'Create a project'}}
+        </h2>
+
+        <form
+          name="projectForm"
+          ng-submit="saveProject(projectForm)"
+          novalidate
+        >
+          <label class="pj-field">
+            <span>Project title *</span>
+            <input
+              type="text"
+              name="title"
+              ng-model="form.title"
+              placeholder="e.g. Campus Event Planner"
+              required
+              maxlength="80"
+            />
+            <small
+              class="pj-error"
+              ng-show="projectForm.$submitted && projectForm.title.$invalid"
+              >Enter a project title.</small
+            >
+          </label>
+
+          <label class="pj-field">
+            <span>Description *</span>
+            <textarea
+              name="description"
+              rows="3"
+              ng-model="form.description"
+              placeholder="What does the project do and who is it for?"
+              required
+              maxlength="400"
+            ></textarea>
+            <small
+              class="pj-error"
+              ng-show="projectForm.$submitted && projectForm.description.$invalid"
+              >Add a short description.</small
+            >
+          </label>
+
+          <label class="pj-field">
+            <span>Technologies used</span>
+            <input
+              type="text"
+              ng-model="form.techText"
+              placeholder="Separate with commas: AngularJS, Node.js, MongoDB"
+            />
+          </label>
+
+          <div class="pj-field-row">
+            <label class="pj-field">
+              <span>GitHub link</span>
+              <input
+                type="url"
+                name="github"
+                ng-model="form.github"
+                placeholder="https://github.com/you/project"
+              />
+              <small class="pj-error" ng-show="projectForm.github.$invalid"
+                >Enter a full link starting with https://</small
+              >
+            </label>
+            <label class="pj-field">
+              <span>Live demo link</span>
+              <input
+                type="url"
+                name="demo"
+                ng-model="form.demo"
+                placeholder="https://your-demo.com"
+              />
+              <small class="pj-error" ng-show="projectForm.demo.$invalid"
+                >Enter a full link starting with https://</small
+              >
+            </label>
+          </div>
+
+          <label class="pj-field">
+            <span>Status</span>
+            <select ng-model="form.status">
+              <option value="not-started">Not started</option>
+              <option value="in-progress">In progress</option>
+              <option value="completed">Completed</option>
+            </select>
+          </label>
+
+          <div class="pj-field">
+            <span>Milestones</span>
+            <div
+              class="pj-ms-row"
+              ng-repeat="m in form.milestones track by $index"
+            >
+              <input
+                type="text"
+                ng-model="m.title"
+                placeholder="Milestone {{$index + 1}}"
+                aria-label="Milestone {{$index + 1}}"
+              />
+              <button
+                type="button"
+                class="pj-icon-btn"
+                ng-click="form.milestones.splice($index, 1)"
+                aria-label="Remove milestone"
+              >
+                ✕
+              </button>
+            </div>
+            <button
+              type="button"
+              class="pj-btn pj-btn-ghost pj-add-ms"
+              ng-click="form.milestones.push({title: '', done: false})"
+            >
+              ＋ Add milestone
+            </button>
+          </div>
+
+          <div class="pj-form-actions">
+            <button
+              type="button"
+              class="pj-btn pj-btn-ghost"
+              ng-click="closeForm()"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="pj-btn pj-btn-primary">
+              {{editing ? 'Save changes' : 'Create project'}}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ================= DELETE CONFIRM ================= -->
+    <div class="pj-overlay" ng-if="toDelete" ng-click="toDelete = null">
+      <div
+        class="pj-modal small"
+        role="alertdialog"
+        aria-modal="true"
+        ng-click="$event.stopPropagation()"
+      >
+        <h2 class="pj-modal-title">Delete this project?</h2>
+        <p class="pj-desc full">
+          “{{toDelete.title}}” and its milestones will be removed. This can’t be
+          undone.
+        </p>
+        <div class="pj-form-actions">
+          <button class="pj-btn pj-btn-ghost" ng-click="toDelete = null">
+            Keep project
+          </button>
+          <button class="pj-btn pj-btn-danger solid" ng-click="confirmDelete()">
+            Delete project
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="pj-toast" ng-class="{'show': toast}" role="status">
+      {{toast}}
+    </div>
+    <!-- ================= CHATBOT ================= -->
+    <div class="chatbot-container" ng-controller="ChatbotController">
+      <!-- Chat Window -->
+      <div class="chat-window" ng-class="{'active': isChatOpen}">
+        <div class="chat-header">
+          <div class="chat-header-info">
+            <span class="chat-avatar">∞</span>
+            <div>
+              <h4>SkillSync Assistant</h4>
+              <p>Online</p>
+            </div>
+          </div>
+          <button class="chat-close" ng-click="closeChat()">✕</button>
+        </div>
+
+        <div class="chat-body" id="chatBody">
+          <div
+            ng-repeat="msg in messages"
+            ng-class="{'bot-message': msg.type === 'bot', 'user-message': msg.type === 'user'}"
+          >
+            <p>{{msg.text}}</p>
+          </div>
+        </div>
+
+        <div class="chat-footer">
+          <input
+            type="text"
+            ng-model="userMessage"
+            ng-keypress="handleKeyPress($event)"
+            placeholder="Type your message..."
+          />
+          <button ng-click="sendMessage()">➤</button>
+        </div>
+      </div>
+
+      <!-- Floating Button -->
+      <button class="chatbot-btn" ng-click="toggleChat()">
+        <img src="../images/chatbot.png" alt="Chatbot" />
+      </button>
+    </div>
+  </body>
+</html>

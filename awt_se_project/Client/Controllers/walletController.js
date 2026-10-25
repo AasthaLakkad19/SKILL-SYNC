@@ -3,7 +3,6 @@ app.controller("WalletController", function ($scope, $http) {
   // USER
   // ============================================================
 
-  $scope.userId = "demo-user";
 
   // ============================================================
   // UI STATE
@@ -43,7 +42,7 @@ app.controller("WalletController", function ($scope, $http) {
 
   $scope.loadWallet = function () {
     $http
-      .get("/api/wallet/" + $scope.userId)
+      .get("/api/wallet")
 
       .then(function (response) {
         if (response.data.success) {
@@ -93,36 +92,11 @@ app.controller("WalletController", function ($scope, $http) {
   };
 
   // ============================================================
-  // EARN TOKENS
-  // ============================================================
-
-  $scope.earnTokens = function (amount, title, category) {
-    $http
-      .post("/api/wallet/earn", {
-        userId: $scope.userId,
-        amount: Number(amount),
-        title: title,
-        category: category,
-      })
-
-      .then(function (response) {
-        if (response.data.success) {
-          // Reload latest wallet from database
-          $scope.loadWallet();
-        }
-      })
-
-      .catch(function (error) {
-        alert((error.data && error.data.message) || "Failed to earn tokens");
-      });
-  };
-  // ============================================================
   // SPEND TOKENS
   // ============================================================
   $scope.spendTokens = function (amount, title, category) {
     $http
       .post("/api/wallet/spend", {
-        userId: $scope.userId,
         amount: Number(amount),
         title: title,
         category: category,

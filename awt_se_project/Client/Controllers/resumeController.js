@@ -88,7 +88,7 @@ app.controller("ResumeController", function ($scope, $http, $timeout) {
     $scope.template = "modern";
 
     $http
-      .delete("http://localhost:3000/api/resume?userId=demo-user")
+      .delete("/api/resume")
       .then(function () {
         alert("Resume cleared successfully!");
       })
@@ -103,7 +103,7 @@ app.controller("ResumeController", function ($scope, $http, $timeout) {
   // Load Resume
   $scope.loadResume = function () {
     $http
-      .get("/api/resume?userId=demo-user")
+      .get("/api/resume")
       .then(function (res) {
         if (res.data) {
           $scope.resume = angular.merge($scope.resume, res.data);
@@ -321,7 +321,6 @@ app.controller("ResumeController", function ($scope, $http, $timeout) {
 
     $scope.saving = true;
     const dataToSend = angular.copy($scope.resume);
-    dataToSend.userId = "demo-user";
 
     $http
       .post("/api/resume", dataToSend)

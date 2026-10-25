@@ -274,10 +274,50 @@
         </section>
       </main>
     </div>
+    <!-- ================= CHATBOT ================= -->
+    <div class="chatbot-container" ng-controller="ChatbotController">
+      <!-- Chat Window -->
+      <div class="chat-window" ng-class="{'active': isChatOpen}">
+        <div class="chat-header">
+          <div class="chat-header-info">
+            <span class="chat-avatar">∞</span>
+            <div>
+              <h4>SkillSync Assistant</h4>
+              <p>Online</p>
+            </div>
+          </div>
+          <button class="chat-close" ng-click="closeChat()">✕</button>
+        </div>
 
+        <div class="chat-body" id="chatBody">
+          <div
+            ng-repeat="msg in messages"
+            ng-class="{'bot-message': msg.type === 'bot', 'user-message': msg.type === 'user'}"
+          >
+            <p>{{msg.text}}</p>
+          </div>
+        </div>
+
+        <div class="chat-footer">
+          <input
+            type="text"
+            ng-model="userMessage"
+            ng-keypress="handleKeyPress($event)"
+            placeholder="Type your message..."
+          />
+          <button ng-click="sendMessage()">➤</button>
+        </div>
+      </div>
+
+      <!-- Floating Button -->
+      <button class="chatbot-btn" ng-click="toggleChat()">
+        <img src="../images/chatbot.png" alt="Chatbot" />
+      </button>
+    </div>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
-    <script src="js/app.js"></script>
-    <script src="Controllers/walletController.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../Controllers/walletController.js"></script>
     <script src="../Controllers/headerController.js"></script>
+    <script src="../Controllers/chatbotController.js"></script>
   </body>
 </html>

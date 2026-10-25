@@ -3,7 +3,7 @@ const Resume = require('../Models/Resume');
 exports.getResume = async (req, res) => {
   try {
 
-    const userId = req.query.userId || 'demo-user';
+    const userId = String(req.user._id);
 
     let resume = await Resume.findOne({ userId });
 
@@ -42,7 +42,7 @@ exports.saveResume = async (req, res) => {
 
   try {
 
-    const userId = req.body.userId || 'demo-user';
+    const userId = String(req.user._id);
 
     const data = {
       ...req.body,
@@ -51,6 +51,7 @@ exports.saveResume = async (req, res) => {
     };
 
     delete data._id;
+    delete data.__v;
 
     const resume = await Resume.findOneAndUpdate(
       { userId },
@@ -82,7 +83,7 @@ exports.deleteResume = async (req, res) => {
 
   try {
 
-    const userId = req.query.userId || 'demo-user';
+    const userId = String(req.user._id);
 
     await Resume.findOneAndDelete({
       userId

@@ -1,151 +1,88 @@
 const Achievement = require("../Models/Achievement");
+const UserAchievement = require("../Models/UserAchievement");
+const { merge, getUserAchievements, formatDate } = require("../utils/achievementUtils");
 
-// Get all achievements
+// All achievements, with the logged-in user's own progress
 exports.getAchievements = async (req, res) => {
   try {
-    const achievements = await Achievement.find().sort({ id: 1 });
-
-    res.status(200).json({
-      success: true,
-      achievements
-    });
-
+    const achievements = await getUserAchievements(req.user._id);
+    res.status(200).json({ success: true, achievements });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch achievements",
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: "Failed to fetch achievements", error: error.message });
   }
 };
 
-
-// Get achievement by ID
+// One achievement
 exports.getAchievementById = async (req, res) => {
   try {
-    const achievement = await Achievement.findOne({
-      id: req.params.id
-    });
-
-    if (!achievement) {
-      return res.status(404).json({
-        success: false,
-        message: "Achievement not found"
-      });
+    const catalog = await Achievement.findOne({ id: Number(req.params.id) });
+    if (!catalog) {
+      return res.status(404).json({ success: false, message: "Achievement not found" });
     }
-
-    res.status(200).json({
-      success: true,
-      achievement
+    const progress = await UserAchievement.findOne({
+      userId: String(req.user._id),
+      achievementId: catalog.id
     });
-
+    res.status(200).json({ success: true, achievement: merge(catalog, progress) });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to fetch achievement",
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: "Failed to fetch achievement", error: error.message });
   }
 };
 
-
-// Update achievement progress
+// Update the logged-in user's progress
 exports.updateProgress = async (req, res) => {
   try {
-    const { current } = req.body;
-
-    const achievement = await Achievement.findOne({
-      id: req.params.id
-    });
-
-    if (!achievement) {
-      return res.status(404).json({
-        success: false,
-        message: "Achievement not found"
-      });
+    const current = Number(req.body.current);
+    if (!Number.isFinite(current) || current < 0) {
+      return res.status(400).json({ success: false, message: "current must be a number >= 0" });
     }
 
-    achievement.current = current;
+    const catalog = await Achievement.findOne({ id: Number(req.params.id) });
+    if (!catalog) {
+      return res.status(404).json({ success: false, message: "Achievement not found" });
+    }
 
-    // Automatic unlocking
-    if (achievement.current >= achievement.target) {
+    const userId = String(req.user._id);
+    const progress =
+      (await UserAchievement.findOne({ userId, achievementId: catalog.id })) ||
+      new UserAchievement({ userId, achievementId: catalog.id });
 
-      achievement.current = achievement.target;
-      achievement.unlocked = true;
+    progress.current = Math.min(current, catalog.target);
 
-      if (!achievement.earnedDate) {
-        const date = new Date();
-
-        const months = [
-          "Jan", "Feb", "Mar", "Apr",
-          "May", "Jun", "Jul", "Aug",
-          "Sep", "Oct", "Nov", "Dec"
-        ];
-
-        achievement.earnedDate =
-          String(date.getDate()).padStart(2, "0") +
-          " " +
-          months[date.getMonth()] +
-          " " +
-          date.getFullYear();
-      }
-
+    if (progress.current >= catalog.target) {
+      progress.unlocked = true;
+      if (!progress.earnedDate) progress.earnedDate = formatDate(new Date());
     } else {
-
-      achievement.unlocked = false;
-      achievement.earnedDate = null;
+      progress.unlocked = false;
+      progress.earnedDate = null;
     }
 
-    await achievement.save();
+    await progress.save();
 
     res.status(200).json({
       success: true,
       message: "Achievement progress updated",
-      achievement
+      achievement: merge(catalog, progress)
     });
-
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to update progress",
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: "Failed to update progress", error: error.message });
   }
 };
 
-
-// Get achievement summary
+// Summary for the logged-in user
 exports.getSummary = async (req, res) => {
   try {
-
-    const achievements = await Achievement.find();
-
+    const achievements = await getUserAchievements(req.user._id);
     const total = achievements.length;
-
-    const unlocked = achievements.filter(
-      item => item.unlocked === true
-    ).length;
-
-    const locked = total - unlocked;
-
-    const completion =
-      total === 0
-        ? 0
-        : Math.round((unlocked / total) * 100);
-
+    const unlocked = achievements.filter((a) => a.unlocked).length;
     res.status(200).json({
       success: true,
       total,
       unlocked,
-      locked,
-      completion
+      locked: total - unlocked,
+      completion: total === 0 ? 0 : Math.round((unlocked / total) * 100)
     });
-
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to get summary",
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: "Failed to get summary", error: error.message });
   }
 };

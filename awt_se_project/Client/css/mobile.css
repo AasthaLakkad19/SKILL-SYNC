@@ -1,0 +1,981 @@
+/* =====================
+   MOBILE – SkillSync
+   Loaded only at max-width: 768px (see index.html).
+   desktop.css does NOT load here, so this file is a full stylesheet.
+   ===================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #395176;
+    --primary-dark: #2c3e5a;
+    --primary-light: #bdb0ca;
+    --accent: #90b1cf;
+    --muted: #9295b7;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+
+    --gradient-color-1: #E8F0FE;
+    --gradient-color-2: #EEF2F9;
+    --gradient-color-3: #F0E9F7;
+    --gradient-color-4: #ffffff;
+
+    --bg: linear-gradient(135deg,
+            var(--gradient-color-1) 8%,
+            var(--gradient-color-2) 40%,
+            var(--gradient-color-3) 100%);
+    --white: #ffffff;
+    --radius: 16px;
+}
+
+html {
+    scroll-padding-top: 120px;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    color: var(--text-dark);
+    background: var(--white);
+    overflow-x: hidden;
+}
+
+img {
+    max-width: 100%;
+}
+
+/* ---------- Header (two rows: logo + buttons, then nav) ---------- */
+header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem 0.8rem;
+    padding: 0.7rem 1rem;
+    background: var(--white);
+    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.06);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.logo-icon {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+    display: block;
+}
+
+.buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.login,
+.signup {
+    padding: 0.45rem 1rem;
+    min-height: 40px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.82rem;
+    cursor: pointer;
+    border: none;
+}
+
+.login {
+    background: transparent;
+    color: var(--primary);
+    border: 1.5px solid var(--primary);
+}
+
+.signup {
+    background: var(--primary);
+    color: #fff;
+}
+
+/* nav drops to its own row and can scroll sideways if it ever overflows */
+nav {
+    order: 3;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-top: 0.3rem;
+    border-top: 1px solid #eef2f7;
+    scrollbar-width: none;
+}
+
+nav::-webkit-scrollbar {
+    display: none;
+}
+
+nav a {
+    text-decoration: none;
+    color: #475569;
+    font-weight: 500;
+    font-size: 0.88rem;
+    padding: 0.3rem 0.2rem;
+    white-space: nowrap;
+}
+
+nav a:active {
+    color: var(--primary);
+}
+
+/* ---------- Hero ---------- */
+.hero {
+    position: relative;
+    min-height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    /* top/bottom space leaves room for the photos */
+    padding: 9.5rem 1.25rem 10rem;
+    background:
+        linear-gradient(to bottom,
+            transparent 0%,
+            transparent 45%,
+            var(--gradient-color-3) 70%,
+            var(--gradient-color-4) 100%),
+        var(--bg);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    max-width: 520px;
+}
+
+.hero-content h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1.18;
+    color: #111827;
+    margin-bottom: 1rem;
+    letter-spacing: -0.8px;
+}
+
+.hero-content p {
+    font-size: 1.02rem;
+    color: #6b7280;
+    margin: 0 auto 1.8rem;
+    max-width: 420px;
+}
+
+.hero-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-top: 1.4rem;
+    max-width: 280px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.primary-btn,
+.secondary-btn {
+    padding: 14px 24px;
+    min-height: 48px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.primary-btn {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+}
+
+.secondary-btn {
+    background: transparent;
+    color: var(--primary);
+    border: 2px solid var(--primary);
+}
+
+/* Floating photos: 2 at top, 2 at bottom, the rest hidden on phones */
+.floating-images {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.float {
+    position: absolute;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.float-1 {
+    width: 105px;
+    height: 80px;
+    top: 14px;
+    left: 5%;
+}
+
+.float-2 {
+    width: 90px;
+    height: 90px;
+    top: 14px;
+    right: 5%;
+}
+
+.float-3 {
+    width: 95px;
+    height: 80px;
+    bottom: 22px;
+    left: 5%;
+    top: auto;
+}
+
+.float-4 {
+    width: 105px;
+    height: 85px;
+    bottom: 16px;
+    right: 5%;
+    top: auto;
+}
+
+.float-5,
+.float-6,
+.float-7,
+.float-8 {
+    display: none;
+}
+
+/* ---------- Shared section spacing ---------- */
+.about,
+.features,
+.skills-section,
+.steps,
+.testimonial {
+    padding: 3.5rem 1.25rem;
+    text-align: center;
+}
+
+.about,
+.features,
+.skills-section,
+.testimonial {
+    background: var(--white);
+}
+
+.steps {
+    background: var(--bg);
+}
+
+.about h2,
+.features h2,
+.skills-section h2,
+.steps h2,
+.testimonial h2,
+.faq h2 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.about h2,
+.steps h2,
+.testimonial h2 {
+    margin-bottom: 2rem;
+}
+
+.section-subtitle {
+    color: var(--text-muted);
+    font-size: 0.98rem;
+    margin-bottom: 2rem;
+}
+
+/* ---------- Skills ---------- */
+.skills-section {
+    position: relative;
+    z-index: 2;
+    margin-top: -30px;
+    padding-top: calc(3.5rem + 30px);
+}
+
+.skills-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.skill-card {
+    background: var(--white);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.6rem 0.8rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.skill-icon {
+    font-size: 2.2rem;
+    margin-bottom: 0.7rem;
+}
+
+.skill-card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.teachers {
+    color: #10b981;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* ---------- About ---------- */
+.about-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.about-card {
+    background: var(--white);
+    padding: 1.6rem 1rem;
+    border-radius: var(--radius);
+    border: 1px solid #e2e8f0;
+}
+
+.about-icon {
+    font-size: 2rem;
+    margin-bottom: 0.6rem;
+}
+
+.about-card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+}
+
+.about-card p {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+/* ---------- Features ---------- */
+.cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.1rem;
+    max-width: 520px;
+    margin: 1.5rem auto 0;
+}
+
+.card {
+    background: var(--bg);
+    padding: 1.7rem 1.4rem;
+    border-radius: 16px;
+    text-align: left;
+    border: 1px solid #e2e8f0;
+}
+
+.card h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.card p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* ---------- Steps ---------- */
+.steps-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+.step-card {
+    background: var(--white);
+    padding: 1.4rem 0.9rem;
+    border-radius: 16px;
+    width: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e9d5ff;
+}
+
+.step-number {
+    width: 38px;
+    height: 38px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0 auto 0.8rem;
+}
+
+.step-card p {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* ---------- Testimonials ---------- */
+.reviews-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.1rem;
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+.review {
+    padding: 1.5rem;
+    border-radius: 16px;
+    text-align: left;
+    border: 1px solid #e2e8f0;
+}
+
+.stars {
+    color: #f59e0b;
+    font-size: 1rem;
+    margin-bottom: 0.7rem;
+}
+
+.review p {
+    font-size: 0.98rem;
+    color: #334155;
+    margin-bottom: 1rem;
+    font-style: italic;
+}
+
+.review h4 {
+    font-size: 0.92rem;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* ---------- FAQ ---------- */
+.faq {
+    padding: 3.5rem 1.25rem;
+    background: var(--white);
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.faq h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.faq-item {
+    background: var(--bg);
+    padding: 1.3rem 1.2rem;
+    border-radius: 14px;
+    margin-bottom: 1rem;
+    border: 1px solid #e2e8f0;
+}
+
+.faq-item h3 {
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+}
+
+.faq-item p {
+    color: var(--text-muted);
+    font-size: 0.93rem;
+}
+
+/* ---------- Footer ---------- */
+footer {
+    background: rgb(32, 31, 31);
+    color: #c4b5fd;
+    padding: 2.2rem 1.25rem 1.5rem;
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+}
+
+.footer-brand {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.footer-links {
+    display: flex;
+    gap: 1.4rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.footer-links a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 0.92rem;
+    padding: 0.3rem 0;
+}
+
+.copyright {
+    text-align: center;
+    font-size: 0.82rem;
+    opacity: 0.8;
+    border-top: 1px solid var(--primary-light);
+    padding-top: 1.2rem;
+}
+
+/* =========================================================
+   CHATBOT (fits any phone width)
+   ========================================================= */
+.chatbot-container {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 9999;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+.chatbot-btn {
+    width: 56px;
+    height: 56px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #395176, #9295b7);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 22px rgba(57, 81, 118, 0.35);
+}
+
+.chatbot-btn img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    display: block;
+}
+
+.chat-window {
+    position: absolute;
+    right: 0;
+    bottom: 70px;
+    width: min(360px, calc(100vw - 32px));
+    height: min(480px, calc(100vh - 150px));
+    height: min(480px, calc(100dvh - 150px));
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+    border: 1px solid #d8e0e7;
+    box-shadow: 0 20px 55px rgba(57, 81, 118, 0.18);
+}
+
+.chat-window.active {
+    display: flex;
+    animation: chatSlideUp 0.3s ease;
+}
+
+@keyframes chatSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.chat-header {
+    min-height: 64px;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #395176, #9295b7);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.chat-header-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.chat-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.chat-header h4 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.chat-header p {
+    margin: 2px 0 0;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.chat-close {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-body {
+    flex: 1;
+    padding: 14px;
+    overflow-y: auto;
+    background: #f5f6f8;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.bot-message,
+.user-message {
+    max-width: 85%;
+    padding: 9px 13px;
+    border-radius: 15px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+.bot-message {
+    align-self: flex-start;
+    background: #fff;
+    color: #3d4c60;
+    border: 1px solid #d8e0e7;
+    border-bottom-left-radius: 4px;
+}
+
+.user-message {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #395176, #9295b7);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+
+.chat-footer {
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border-top: 1px solid #d8e0e7;
+}
+
+.chat-footer input {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    padding: 0 16px;
+    border-radius: 25px;
+    border: 1px solid #d8e0e7;
+    background: #f5f6f8;
+    color: #26384f;
+    font-family: inherit;
+    font-size: 16px;
+    /* 16px stops iOS Safari zooming in when the input is focused */
+    outline: none;
+}
+
+.chat-footer input:focus {
+    background: #fff;
+    border-color: #9295b7;
+}
+
+.chat-footer button {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #395176, #9295b7);
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* =========================================================
+   MOTION (mobile versions: smaller distances)
+   ========================================================= */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Hero entrance */
+.float {
+    --rot: 0deg;
+    --x-start: -70px;
+    opacity: 0;
+    transform: translateX(var(--x-start)) scale(0.95) rotate(var(--rot));
+    transition:
+        transform 1s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 1s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform, opacity;
+}
+
+.float-1 {
+    --rot: -6deg;
+    transition-delay: 0.05s;
+}
+
+.float-2 {
+    --rot: 5deg;
+    --x-start: 70px;
+    transition-delay: 0.15s;
+}
+
+.float-3 {
+    --rot: 4deg;
+    transition-delay: 0.25s;
+}
+
+.float-4 {
+    --rot: -4deg;
+    --x-start: 70px;
+    transition-delay: 0.35s;
+}
+
+.float.entered {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotate(var(--rot));
+}
+
+.float.floating {
+    animation: floatIdle 5s ease-in-out infinite;
+}
+
+@keyframes floatIdle {
+
+    0%,
+    100% {
+        transform: translateX(0) scale(1) rotate(var(--rot)) translateY(0);
+    }
+
+    50% {
+        transform: translateX(0) scale(1) rotate(var(--rot)) translateY(-6px);
+    }
+}
+
+.hero-content {
+    opacity: 0;
+    transform: translateY(30px) scale(0.97);
+    transition:
+        transform 1s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hero-content.entered {
+    opacity: 1;
+    transform: none;
+}
+
+/* Scroll reveal */
+[data-reveal] {
+    opacity: 0;
+    will-change: transform, opacity;
+    transition:
+        transform 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--stagger, 0s);
+}
+
+[data-reveal].in-view {
+    opacity: 1;
+    transform: none;
+}
+
+[data-reveal="fade-up"] {
+    transform: translateY(28px);
+}
+
+[data-reveal="fade-in"] {
+    transform: translateY(12px);
+}
+
+[data-reveal="zoom-in"] {
+    transform: scale(0.88);
+}
+
+[data-reveal="slide-left"] {
+    transform: translateX(-40px);
+}
+
+[data-reveal="slide-right"] {
+    transform: translateX(40px);
+}
+
+[data-reveal="alt-image"] {
+    transform: scale(0.75);
+}
+
+[data-reveal="alt-text"] {
+    transform: translateY(14px);
+}
+
+/* Touch screens: a quick press effect instead of hover lift */
+.skill-card,
+.about-card,
+.card,
+.step-card,
+.faq-item,
+.primary-btn,
+.secondary-btn,
+.signup,
+.login {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.skill-card:active,
+.about-card:active,
+.card:active,
+.step-card:active,
+.faq-item:active,
+.primary-btn:active,
+.secondary-btn:active,
+.signup:active,
+.login:active {
+    transform: scale(0.97);
+}
+
+/* =========================================================
+   SMALL PHONES (≤ 480px)
+   ========================================================= */
+@media (max-width: 480px) {
+    .logo {
+        font-size: 1rem;
+    }
+
+    .login,
+    .signup {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.78rem;
+    }
+
+    .hero {
+        padding: 8.5rem 1rem 9rem;
+    }
+
+    .hero-content h1 {
+        font-size: 1.85rem;
+    }
+
+    .float-1 {
+        width: 90px;
+        height: 70px;
+    }
+
+    .float-2 {
+        width: 78px;
+        height: 78px;
+    }
+
+    .float-3 {
+        width: 82px;
+        height: 70px;
+    }
+
+    .float-4 {
+        width: 90px;
+        height: 72px;
+    }
+
+    .about-grid,
+    .skills-grid,
+    .steps-container {
+        gap: 0.75rem;
+    }
+
+    .about h2,
+    .features h2,
+    .skills-section h2,
+    .steps h2,
+    .testimonial h2,
+    .faq h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Very narrow screens (≤ 360px): single column cards */
+@media (max-width: 360px) {
+
+    .about-grid,
+    .skills-grid,
+    .steps-container {
+        grid-template-columns: 1fr;
+    }
+}
