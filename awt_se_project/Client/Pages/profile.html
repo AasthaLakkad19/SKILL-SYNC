@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en" ng-app="skillSyncApp">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>SkillSync - My Profile</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/desktop.css" />
+    
+    <link rel="stylesheet" href="../css/profile.css" />
+    <link rel="stylesheet" href="../css/home.css" />
+    <link rel="stylesheet" href="../css/sidebar_header.css" />
+
+    <!-- AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.3/angular.min.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../Controllers/profileController.js"></script>
+    <script src="../Controllers/headerController.js"></script>
+    <script src="../Controllers/chatbotController.js"></script>
+  </head>
+
+  <body ng-controller="ProfileController">
+    <div class="dashboard" ng-class="{'sidebar-open': sidebarOpen}">
+      <!-- ================= HEADER ================= -->
+      <header class="top-header" ng-controller="HeaderController">
+        <div ng-include="'../components/header.html'"></div>
+      </header>
+
+      <!-- ================= SIDEBAR ================= -->
+      <aside class="sidebar" ng-class="{'sidebar-open': sidebarOpen}">
+        <nav>
+          <a href="firstLogin.html" class="nav-item">
+            <span>🏠</span>
+            <span>Home</span>
+          </a>
+
+          <a href="learnSkills.html" class="nav-item">
+            <span>📚</span>
+            <span>Learn Skills</span>
+          </a>
+
+          <a href="teachSkills.html" class="nav-item">
+            <span>🎓</span>
+            <span>Teach Skills</span>
+          </a>
+
+          <a href="findTeam.html" class="nav-item">
+            <span>👥</span>
+            <span>Find Teammates</span>
+          </a>
+
+          <a href="profile.html" class="nav-item active">
+            <span>👤</span>
+            <span>My Profile</span>
+          </a>
+
+          <div class="nav-submenu">
+            <a href="achievements.html">🏆 Achievements</a>
+            <a href="wallet.html">🪙 Skill Wallet</a>
+            <a href="projects.html">📂 My Projects</a>
+            <a href="buildResume.html">📄 Build Resume</a>
+          </div>
+
+          <a href="settings.html" class="nav-item">
+            <span>⚙</span>
+            <span>Settings</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- ================= MAIN CONTENT ================= -->
+      <main class="main-content profile-page">
+        <!-- ========== PROFILE HERO ========== -->
+        <section class="profile-hero">
+          <div class="profile-hero-bg"></div>
+
+          <div class="profile-hero-content">
+            <div class="profile-avatar-wrap">
+              <div class="profile-avatar" ng-if="!profile.photoUrl">
+                {{ profile.initial }}
+              </div>
+              <img
+                ng-if="profile.photoUrl"
+                ng-src="{{ profile.photoUrl }}"
+                alt="{{ profile.name }}"
+                class="profile-avatar-img"
+              />
+              <span
+                class="availability-dot"
+                ng-class="profile.availability"
+                title="{{ profile.availabilityLabel }}"
+              ></span>
+            </div>
+
+            <div class="profile-identity">
+              <div class="profile-name-row">
+                <h1>{{ profile.name }}</h1>
+                <span class="profile-badge" ng-if="profile.verified">✓ Verified</span>
+              </div>
+
+              <p class="profile-headline">{{ profile.headline }}</p>
+
+              <div class="profile-meta">
+                <span class="meta-item">
+                  <span aria-hidden="true">📍</span>
+                  {{ profile.location }}
+                </span>
+                <span class="meta-item">
+                  <span aria-hidden="true">🎓</span>
+                  {{ profile.education.degree }} · {{ profile.education.school }}
+                </span>
+                <span class="meta-item availability-label" ng-class="profile.availability">
+                  <span aria-hidden="true">●</span>
+                  {{ profile.availabilityLabel }}
+                </span>
+              </div>
+
+              <p class="profile-bio">{{ profile.bio }}</p>
+
+              <div class="profile-social" ng-if="profile.socialLinks.length">
+                <a
+                  ng-repeat="link in profile.socialLinks"
+                  ng-href="{{ link.url }}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="social-link"
+                  title="{{ link.label }}"
+                >
+                  <span aria-hidden="true">{{ link.icon }}</span>
+                  {{ link.label }}
+                </a>
+              </div>
+            </div>
+
+            <div class="profile-actions">
+              <button class="primary-btn" ng-click="connect()">
+                <span aria-hidden="true">🤝</span> Connect
+              </button>
+              <button class="outline-btn" ng-click="message()">
+                <span aria-hidden="true">💬</span> Message
+              </button>
+              <button class="ghost-btn" ng-click="editProfile()" ng-if="isOwnProfile">
+                <span aria-hidden="true">✏️</span> Edit Profile
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick stats strip -->
+          <div class="profile-stats">
+            <div class="stat-item">
+              <strong>{{ profile.stats.skills }}</strong>
+              <span>Skills</span>
+            </div>
+            <div class="stat-item">
+              <strong>{{ profile.stats.projects }}</strong>
+              <span>Projects</span>
+            </div>
+            <div class="stat-item">
+              <strong>{{ profile.stats.achievements }}</strong>
+              <span>Achievements</span>
+            </div>
+            <div class="stat-item">
+              <strong>{{ profile.stats.rating }}</strong>
+              <span>Rating</span>
+            </div>
+            <div class="stat-item tokens-stat">
+              <strong>🪙 {{ profile.stats.publicTokens }}</strong>
+              <span>Skill Tokens</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== TWO COLUMN LAYOUT ========== -->
+        <div class="profile-grid">
+          <!-- LEFT COLUMN -->
+          <div class="profile-col-main">
+            <!-- Skills -->
+            <section class="profile-card">
+              <div class="card-header">
+                <h2>Skills & Expertise</h2>
+                <span class="card-count">{{ profile.skills.length }} skills</span>
+              </div>
+
+              <div class="skills-list">
+                <div class="skill-row" ng-repeat="skill in profile.skills">
+                  <div class="skill-main">
+                    <span class="skill-icon" aria-hidden="true">{{ skill.icon }}</span>
+                    <div class="skill-text">
+                      <strong>{{ skill.name }}</strong>
+                      <span class="skill-level-label">{{ skill.levelLabel }}</span>
+                    </div>
+                  </div>
+                  <div class="skill-level-bar">
+                    <div
+                      class="skill-level-fill"
+                      ng-style="{'width': skill.level + '%'}"
+                      ng-class="'level-' + skill.levelBand"
+                    ></div>
+                  </div>
+                  <span class="skill-percent">{{ skill.level }}%</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- Projects -->
+            <section class="profile-card">
+              <div class="card-header">
+                <h2>Projects</h2>
+                <a href="projects.html" class="card-link">View all →</a>
+              </div>
+
+              <div class="projects-grid" ng-if="profile.projects.length">
+                <article class="project-card" ng-repeat="project in profile.projects">
+                  <div class="project-top">
+                    <span class="project-icon" aria-hidden="true">{{ project.icon }}</span>
+                    <span class="project-status" ng-class="project.status">{{ project.statusLabel }}</span>
+                  </div>
+                  <h3>{{ project.title }}</h3>
+                  <p>{{ project.description }}</p>
+                  <div class="project-tags">
+                    <span ng-repeat="tag in project.tags">{{ tag }}</span>
+                  </div>
+                  <div class="project-meta">
+                    <span>{{ project.role }}</span>
+                    <span>{{ project.year }}</span>
+                  </div>
+                </article>
+              </div>
+
+              <div class="empty-state" ng-if="!profile.projects.length">
+                <span aria-hidden="true">📂</span>
+                <p>No projects yet. Start collaborating!</p>
+              </div>
+            </section>
+
+            <!-- Reviews -->
+            <section class="profile-card">
+              <div class="card-header">
+                <h2>Ratings & Reviews</h2>
+                <div class="rating-summary">
+                  <span class="stars" aria-hidden="true">★★★★★</span>
+                  <strong>{{ profile.stats.rating }}</strong>
+                  <span class="review-count">({{ profile.reviews.length }} reviews)</span>
+                </div>
+              </div>
+
+              <div class="reviews-list" ng-if="profile.reviews.length">
+                <div class="review-item" ng-repeat="review in profile.reviews">
+                  <div class="review-header">
+                    <div class="reviewer-avatar">{{ review.initial }}</div>
+                    <div class="reviewer-info">
+                      <strong>{{ review.name }}</strong>
+                      <span class="review-meta">{{ review.context }} · {{ review.date }}</span>
+                    </div>
+                    <div class="review-stars" aria-label="{{ review.rating }} out of 5">
+                      <span ng-repeat="s in [1,2,3,4,5] track by $index"
+                            ng-class="{'filled': $index < review.rating}">★</span>
+                    </div>
+                  </div>
+                  <p class="review-text">{{ review.text }}</p>
+                </div>
+              </div>
+
+              <div class="empty-state" ng-if="!profile.reviews.length">
+                <span aria-hidden="true">⭐</span>
+                <p>No reviews yet.</p>
+              </div>
+            </section>
+          </div>
+
+          <!-- RIGHT COLUMN -->
+          <div class="profile-col-side">
+            <!-- Education -->
+            <section class="profile-card">
+              <div class="card-header">
+                <h2>Education</h2>
+              </div>
+              <div class="education-item">
+                <div class="edu-icon" aria-hidden="true">🎓</div>
+                <div>
+                  <strong>{{ profile.education.degree }}</strong>
+                  <p>{{ profile.education.school }}</p>
+                  <span class="edu-years">{{ profile.education.years }}</span>
+                  <p class="edu-detail" ng-if="profile.education.detail">{{ profile.education.detail }}</p>
+                </div>
+              </div>
+            </section>
+
+            <!-- Achievements -->
+            <section class="profile-card">
+              <div class="card-header">
+                <h2>Achievements</h2>
+                <a href="achievements.html" class="card-link">View all →</a>
+              </div>
+
+              <div class="achievements-list" ng-if="profile.achievements.length">
+                <div class="achievement-item" ng-repeat="ach in profile.achievements">
+                  <div class="ach-icon" ng-style="{'background': ach.bg}">
+                    {{ ach.icon }}
+                  </div>
+                  <div class="ach-text">
+                    <strong>{{ ach.title }}</strong>
+                    <span>{{ ach.date }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="empty-state compact" ng-if="!profile.achievements.length">
+                <span aria-hidden="true">🏆</span>
+                <p>No achievements yet.</p>
+              </div>
+            </section>
+
+            <!-- Skill Tokens (public summary only) -->
+            <section class="profile-card tokens-card">
+              <div class="card-header">
+                <h2>Skill Tokens</h2>
+              </div>
+              <div class="tokens-public">
+                <div class="tokens-big">
+                  <span aria-hidden="true">🪙</span>
+                  <strong>{{ profile.stats.publicTokens }}</strong>
+                </div>
+                <p class="tokens-note">
+                  Public balance only. Detailed wallet activity is private.
+                </p>
+                <div class="tokens-breakdown">
+                  <div>
+                    <span>Earned teaching</span>
+                    <strong>{{ profile.tokenSummary.earned }}</strong>
+                  </div>
+                  <div>
+                    <span>Spent learning</span>
+                    <strong>{{ profile.tokenSummary.spent }}</strong>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- Availability -->
+            <section class="profile-card">
+              <div class="card-header">
+                <h2>Availability</h2>
+              </div>
+              <div class="availability-box" ng-class="profile.availability">
+                <span class="avail-status">{{ profile.availabilityLabel }}</span>
+                <p>{{ profile.availabilityNote }}</p>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- ================= CHATBOT ================= -->
+    <div class="chatbot-container" ng-controller="ChatbotController">
+      <div class="chat-window" ng-class="{'active': isChatOpen}">
+        <div class="chat-header">
+          <div class="chat-header-info">
+            <span class="chat-avatar">∞</span>
+            <div>
+              <h4>SkillSync Assistant</h4>
+              <p>Online</p>
+            </div>
+          </div>
+          <button class="chat-close" ng-click="closeChat()">✕</button>
+        </div>
+        <div class="chat-body" id="chatBody">
+          <div
+            ng-repeat="msg in messages"
+            ng-class="{'bot-message': msg.type === 'bot', 'user-message': msg.type === 'user'}"
+          >
+            <p>{{msg.text}}</p>
+          </div>
+        </div>
+        <div class="chat-footer">
+          <input
+            type="text"
+            ng-model="userMessage"
+            ng-keypress="handleKeyPress($event)"
+            placeholder="Type your message..."
+          />
+          <button ng-click="sendMessage()">➤</button>
+        </div>
+      </div>
+      <button class="chatbot-btn" ng-click="toggleChat()">
+        <img src="../images/chatbot.png" alt="Chatbot" />
+      </button>
+    </div>
+  </body>
+</html>
