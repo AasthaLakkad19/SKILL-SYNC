@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en" ng-app="skillSyncApp">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Find Teammate | SkillSync</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/desktop.css" />
+    <link rel="stylesheet" href="../css/home.css" />
+    <link rel="stylesheet" href="../css/sidebar_header.css" />
+    <link rel="stylesheet" href="../css/teammate.css" />
+
+    <!-- AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../Controllers/headerController.js"></script>
+    <script src="../Controllers/teamController.js"></script>
+    <script src="../Controllers/chatbotController.js"></script>
+  </head>
+
+  <body ng-controller="TeammateController">
+    <div class="dashboard" ng-class="{'sidebar-open': sidebarOpen}">
+      <!-- ================= HEADER ================= -->
+      <header class="top-header" ng-controller="HeaderController">
+        <div ng-include="'../components/header.html'"></div>
+      </header>
+
+      <!-- ================= SIDEBAR ================= -->
+      <aside class="sidebar" ng-class="{'sidebar-open': sidebarOpen}">
+        <nav>
+          <a href="firstLogin.html" class="nav-item">
+            <span>🏠</span><span>Home</span>
+          </a>
+          <a href="learnSkills.html" class="nav-item">
+            <span>📚</span><span>Learn Skills</span>
+          </a>
+          <a href="teachSkills.html" class="nav-item">
+            <span>🎓</span><span>Teach Skills</span>
+          </a>
+          <a href="findTeam.html" class="nav-item active">
+            <span>👥</span><span>Find Teammates</span>
+          </a>
+          <a href="profile.html" class="nav-item">
+            <span>👤</span><span>My Profile</span>
+          </a>
+          <div class="nav-submenu">
+            <a href="achievements.html"> 🏆 Achievements </a>
+            <a href="wallet.html"> 🪙 Skill Wallet </a>
+            <a href="projects.html"> 📂 My Projects </a>
+            <a href="buildResume.html"> 📄 Build Resume </a>
+          </div>
+          <a href="settings.html" class="nav-item">
+            <span>⚙</span><span>Settings</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- ================= MAIN CONTENT ================= -->
+      <main class="main-content teammate-page">
+        <!-- HERO -->
+        <section class="tm-hero">
+          <div class="tm-hero-content">
+            <p class="tm-eyebrow">SKILLSYNC TEAM BUILDER</p>
+            <h1>Find Your Perfect <span>Teammate</span></h1>
+            <p class="tm-hero-description">
+              Connect with students who have the skills, interests and expertise
+              you need for your next project.
+            </p>
+          </div>
+          <div class="tm-hero-illustration" aria-hidden="true">🤝</div>
+        </section>
+
+        <!-- SEARCH + FILTERS -->
+        <section class="tm-search-panel">
+          <div class="tm-search-box">
+            <span aria-hidden="true">🔍</span>
+            <input
+              type="text"
+              ng-model="filters.search"
+              placeholder="Search by name or skill..."
+              aria-label="Search by name or skill"
+            />
+          </div>
+
+          <div class="tm-filter-box">
+            <select ng-model="filters.skill" aria-label="Filter by skill">
+              <option value="all">All Skills</option>
+              <option value="javascript">JavaScript</option>
+              <option value="python">Python</option>
+              <option value="java">Java</option>
+              <option value="react">React</option>
+              <option value="node.js">Node.js</option>
+              <option value="mongodb">MongoDB</option>
+              <option value="html/css">HTML/CSS</option>
+              <option value="figma">Figma</option>
+              <option value="ui/ux">UI/UX</option>
+              <option value="machine learning">Machine Learning</option>
+            </select>
+          </div>
+
+          <div class="tm-filter-box">
+            <select
+              ng-model="filters.interest"
+              aria-label="Filter by project interest"
+            >
+              <option value="all">All Project Interests</option>
+              <option value="web development">Web Development</option>
+              <option value="ui/ux">UI/UX</option>
+              <option value="artificial intelligence">
+                Artificial Intelligence
+              </option>
+              <option value="mobile app development">
+                Mobile App Development
+              </option>
+              <option value="data science">Data Science</option>
+            </select>
+          </div>
+
+          <div class="tm-filter-box">
+            <select
+              ng-model="filters.availability"
+              aria-label="Filter by availability"
+            >
+              <option value="all">Any Availability</option>
+              <option value="available">Available</option>
+              <option value="busy">Busy</option>
+            </select>
+          </div>
+        </section>
+
+        <!-- TEAMMATES -->
+        <section class="tm-section">
+          <div class="tm-section-heading">
+            <div>
+              <h2>Suggested Teammates</h2>
+              <p>Students who may be a good match for your project.</p>
+            </div>
+            <span class="tm-count-badge">
+              {{ filtered.length }} teammate{{ filtered.length === 1 ? '' : 's'
+              }}
+            </span>
+          </div>
+
+          <div class="tm-grid">
+            <article
+              class="tm-card"
+              ng-repeat="t in filtered = (teammates | filter:matchesFilters) track by t.id"
+            >
+              <div class="tm-card-top">
+                <div class="tm-avatar">{{ t.name.charAt(0) }}</div>
+                <span class="tm-availability" ng-class="t.availability">
+                  <span class="tm-status-dot"></span>
+                  {{ t.availability === 'available' ? 'Available' : 'Busy' }}
+                </span>
+              </div>
+
+              <h3>{{ t.name }}</h3>
+              <p class="tm-education">{{ t.education }}</p>
+              <p class="tm-description">{{ t.description }}</p>
+
+              <div class="tm-skills">
+                <span ng-repeat="s in t.skills">{{ s }}</span>
+              </div>
+
+              <div class="tm-interest-box" ng-if="t.interestLabel">
+                <span aria-hidden="true">🎯</span>
+                <span
+                  ><strong>Interested in:</strong> {{ t.interestLabel }}</span
+                >
+              </div>
+
+              <div class="tm-card-buttons">
+                <button
+                  class="tm-view-btn"
+                  type="button"
+                  ng-click="viewProfile(t)"
+                >
+                  View Profile
+                </button>
+                <button
+                  class="tm-connect-btn"
+                  type="button"
+                  ng-class="{'connected': t.connection !== 'none'}"
+                  ng-click="connect(t)"
+                  ng-disabled="busyId === t.id"
+                >
+                  {{ connectLabel(t) }}
+                </button>
+              </div>
+            </article>
+          </div>
+
+          <!-- NO RESULTS -->
+          <div class="tm-no-results" ng-show="loaded && filtered.length === 0">
+            <span aria-hidden="true">🔎</span>
+            <h3>No teammates found</h3>
+            <p>Try changing your search or selecting different filters.</p>
+          </div>
+        </section>
+        <div
+          ng-if="notice"
+          role="status"
+          style="
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            z-index: 1000;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+          "
+        >
+          {{ notice }}
+        </div>
+      </main>
+    </div>
+    <!-- ================= CHATBOT ================= -->
+    <div class="chatbot-container" ng-controller="ChatbotController">
+      <!-- Chat Window -->
+      <div class="chat-window" ng-class="{'active': isChatOpen}">
+        <div class="chat-header">
+          <div class="chat-header-info">
+            <span class="chat-avatar">∞</span>
+            <div>
+              <h4>SkillSync Assistant</h4>
+              <p>Online</p>
+            </div>
+          </div>
+          <button class="chat-close" ng-click="closeChat()">✕</button>
+        </div>
+
+        <div class="chat-body" id="chatBody">
+          <div
+            ng-repeat="msg in messages"
+            ng-class="{'bot-message': msg.type === 'bot', 'user-message': msg.type === 'user'}"
+          >
+            <p>{{msg.text}}</p>
+          </div>
+        </div>
+
+        <div class="chat-footer">
+          <input
+            type="text"
+            ng-model="userMessage"
+            ng-keypress="handleKeyPress($event)"
+            placeholder="Type your message..."
+          />
+          <button ng-click="sendMessage()">➤</button>
+        </div>
+      </div>
+
+      <!-- Floating Button -->
+      <button class="chatbot-btn" ng-click="toggleChat()">
+        <img src="../images/chatbot.png" alt="Chatbot" />
+      </button>
+    </div>
+  </body>
+</html>
