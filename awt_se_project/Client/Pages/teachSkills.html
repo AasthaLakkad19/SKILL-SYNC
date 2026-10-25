@@ -1,0 +1,936 @@
+<!doctype html>
+<html lang="en" ng-app="skillSyncApp">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SkillSync - Teach Skills</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/teachSkills.css" />
+    <link rel="stylesheet" href="../css/desktop.css" />
+    <link rel="stylesheet" href="../css/home.css" />
+
+    <link rel="stylesheet" href="../css/mobile.css" />
+    <link rel="stylesheet" href="../css/sidebar_header.css" />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  </head>
+  <body ng-controller="TeachSkillsController">
+    <div class="dashboard" ng-class="{'sidebar-open': sidebarOpen}">
+      <header class="top-header" ng-controller="HeaderController">
+        <div ng-include="'../components/header.html'"></div>
+      </header>
+
+      <aside class="sidebar" ng-class="{'sidebar-open': sidebarOpen}">
+        <nav>
+          <a href="firstLogin.html" class="nav-item"
+            ><span>🏠</span><span>Home</span></a
+          >
+          <a href="learnSkills.html" class="nav-item"
+            ><span>📚</span><span>Learn Skills</span></a
+          >
+          <a href="teachSkills.html" class="nav-item active"
+            ><span>🎓</span><span>Teach Skills</span></a
+          >
+          <a href="findTeam.html" class="nav-item"
+            ><span>👥</span><span>Find Teammates</span></a
+          >
+          <a href="profile.html" class="nav-item"
+            ><span>👤</span><span>My Profile</span></a
+          >
+          <div class="nav-submenu">
+            
+            <a href="achievements.html">🏆 Achievements</a>
+            <a href="wallet.html">🪙 Skill Wallet</a>
+            <a href="projects.html">📂 My Projects</a>
+            <a href="buildResume.html">📄 Build Resume</a>
+          </div>
+          <a href="settings.html" class="nav-item"
+            ><span>⚙️</span><span>Settings</span></a
+          >
+        </nav>
+      </aside>
+
+      <main class="main-content teach-page">
+        <section class="teach-hero">
+          <div class="hero-copy">
+            <span class="eyebrow"
+              ><span class="eyebrow-dot"></span> YOUR KNOWLEDGE HAS VALUE</span
+            >
+            <h1>Teach what you know.<br /><span>Level up together.</span></h1>
+            <p>
+              Turn your skills into mini learning experiences. Help a peer, earn
+              Skill Tokens, and build your teaching streak.
+            </p>
+            <div class="hero-actions">
+              <a href="#create-session" class="btn-primary"
+                >＋ Create a teaching session</a
+              >
+              <a href="#teach-quest" class="btn-secondary"
+                >Explore TeachQuest <span>↗</span></a
+              >
+            </div>
+            <div class="hero-proof">
+              <span class="avatar-stack"><i>R</i><i>A</i><i>M</i></span>
+              <span
+                ><strong>Peer-powered learning</strong
+                ><small>Every lesson helps someone move forward.</small></span
+              >
+            </div>
+          </div>
+          <div class="hero-art" aria-label="Teaching journey illustration">
+            <div class="orbit orbit-one"></div>
+            <div class="orbit orbit-two"></div>
+            <div class="art-card art-card-top">
+              <span class="art-icon">✦</span
+              ><span
+                ><b>Share knowledge</b><small>One lesson at a time</small></span
+              >
+            </div>
+            <div class="art-center">
+              <span class="bulb">✧</span><b>SKILL</b><b>↔</b><b>GROWTH</b>
+            </div>
+            <div class="art-card art-card-bottom">
+              <span class="mini-medal">🏅</span
+              ><span
+                ><b>Earn rewards</b
+                ><small>Tokens • Badges • Streaks</small></span
+              >
+            </div>
+            <span class="float-star star-a">✦</span
+            ><span class="float-star star-b">✧</span>
+          </div>
+        </section>
+
+        <section class="stats-row" aria-label="Teaching progress">
+          <article class="stat-card">
+            <span class="stat-icon blue-icon">🎓</span>
+            <div>
+              <small>Sessions created</small><strong>{{sessions.length}}</strong
+              ><em>{{stats.learnersReached || 0}} learner<span ng-if="stats.learnersReached !== 1">s</span> reached</em>
+            </div>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon gold-icon">🪙</span>
+            <div>
+              <small>Tokens earned here</small><strong>{{tokensEarned}}</strong
+              ><em>{{stats.completedCount || 0}} completed lesson<span ng-if="stats.completedCount !== 1">s</span></em>
+            </div>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon green-icon">🔥</span>
+            <div>
+              <small>Teaching streak</small
+              ><strong>{{streak}} day<span ng-if="streak !== 1">s</span></strong
+              ><em>Consistency counts</em>
+            </div>
+          </article>
+          <article class="stat-card">
+            <span class="stat-icon violet-icon">🏆</span>
+            <div>
+              <small>Teaching level</small><strong>{{teachingLevel}}</strong
+              ><em>{{levelHint}}</em>
+            </div>
+          </article>
+        </section>
+
+        <section class="section-heading" id="teach-quest">
+          <div>
+            <span class="eyebrow">MAKE TEACHING FUN</span>
+            <h2>TeachQuest <span class="new-pill">NEW</span></h2>
+            <p>
+              Small challenges that make your lessons more interactive than a
+              lecture.
+            </p>
+          </div>
+        </section>
+        <section class="quest-grid">
+          <article class="quest-card quest-featured">
+            <div class="quest-topline">
+              <span class="quest-tag">TODAY'S CHALLENGE</span
+              ><span class="quest-emoji">⚡</span>
+            </div>
+            <h3>The 3-Minute Skill Sprint</h3>
+            <p>
+              Explain one concept in three minutes. Keep it simple, give one
+              example, then ask your learner a quick question.
+            </p>
+            <div class="sprint-steps">
+              <span><b>01</b> Explain</span><span><b>02</b> Demonstrate</span
+              ><span><b>03</b> Quick quiz</span>
+            </div>
+            <button class="btn-primary btn-small" ng-click="startSprint()">
+              {{sprintStarted ? 'Sprint in progress ✓' : 'Start a skill
+              sprint'}}
+            </button>
+            <div class="sprint-panel" ng-if="sprintStarted">
+              <div class="sprint-timer">
+                <span>⏱</span><strong>{{sprintSeconds | secondsTime}}</strong
+                ><small>3-minute practice timer</small>
+              </div>
+              <div class="timer-actions">
+                <button
+                  class="btn-secondary btn-small"
+                  ng-click="toggleSprint()"
+                >
+                  {{sprintRunning ? 'Pause timer' : 'Start timer'}}</button
+                ><button class="text-button" ng-click="resetSprint()">
+                  Reset
+                </button>
+              </div>
+              <p class="timer-note" aria-live="polite">{{sprintMessage}}</p>
+            </div>
+          </article>
+          <article class="quest-card">
+            <div class="quest-icon quiz-icon">🧠</div>
+            <span class="card-kicker">INTERACTIVE TEACHING</span>
+            <h3>Teach with a mini quiz</h3>
+            <p>
+              Make your learner think instead of just listening. Try a sample
+              question to see how it works.
+            </p>
+            <div class="sample-question">
+              <b>Sample: What makes a lesson memorable?</b
+              ><label
+                ng-repeat="option in quizOptions track by $index"
+                class="quiz-option"
+                ><input
+                  type="radio"
+                  name="teachQuiz"
+                  ng-model="$parent.selectedQuiz"
+                  ng-value="$index"
+                />
+                {{option}}</label
+              >
+              <div
+                class="quiz-feedback"
+                ng-if="quizChecked"
+                ng-class="{'correct-feedback': selectedQuiz === 1}"
+              >
+                {{selectedQuiz === 1 ? 'Exactly! A clear example helps connect a
+                concept to real life.' : 'Try again — think about what helps
+                learners connect ideas to real life.'}}
+              </div>
+              <button class="btn-secondary btn-small" ng-click="checkQuiz()">
+                Check answer
+              </button>
+            </div>
+          </article>
+          <article class="quest-card">
+            <div class="quest-icon badge-icon">🎯</div>
+            <span class="card-kicker">BUILD YOUR REPUTATION</span>
+            <h3>Collect teaching badges</h3>
+            <p>
+              Celebrate the habits that make you a great peer mentor. Complete a
+              challenge to unlock your next milestone.
+            </p>
+            <div class="badge-list">
+              <span
+                class="badge-chip"
+                ng-class="{'badge-unlocked': stats.badges.firstLesson}"
+                >🌱 First lesson</span
+              ><span
+                class="badge-chip"
+                ng-class="{'badge-unlocked': stats.badges.ideaSharer}"
+                >💡 Idea sharer</span
+              ><span
+                class="badge-chip"
+                ng-class="{'badge-unlocked': stats.badges.tokenStar}"
+                >⭐ Token star</span
+              >
+            </div>
+            <small class="badge-hint"
+              >{{stats.badges.firstLesson ? 'Your first lesson badge is unlocked!' :
+              'Create your first session to unlock your first badge.'}}</small
+            >
+          </article>
+        </section>
+
+        <section class="create-layout" id="create-session">
+          <div class="form-panel">
+            <div class="section-heading compact-heading">
+              <div>
+                <span class="eyebrow">YOUR NEXT IMPACT</span>
+                <h2>{{editingId ? 'Edit your teaching session' : 'Create a teaching session'}}</h2>
+                <p>Design a helpful session that another student can join.</p>
+              </div>
+              <span class="form-step">{{editingId ? 'EDITING' : 'STEP 1 OF 1'}}</span>
+            </div>
+            <form
+              name="sessionForm"
+              ng-submit="saveSession(sessionForm)"
+              novalidate
+            >
+              <div class="form-grid">
+                <div class="field full-field">
+                  <label for="sessionTitle">Session title <span>*</span></label
+                  ><input
+                    id="sessionTitle"
+                    type="text"
+                    ng-model="newSession.title"
+                    placeholder="e.g. Build your first responsive webpage"
+                    required
+                    maxlength="70"
+                  /><small
+                    >Give your lesson a clear, outcome-focused title.</small
+                  >
+                </div>
+                <div class="field">
+                  <label for="skillName">Skill <span>*</span></label
+                  ><input
+                    id="skillName"
+                    type="text"
+                    ng-model="newSession.skill"
+                    placeholder="e.g. HTML & CSS"
+                    required
+                  />
+                </div>
+                <div class="field">
+                  <label for="skillCategory">Category <span>*</span></label
+                  ><select
+                    id="skillCategory"
+                    ng-model="newSession.category"
+                    required
+                  >
+                    <option value="">Choose a category</option>
+                    <option>Web Development</option>
+                    <option>Programming</option>
+                    <option>Design & Creativity</option>
+                    <option>Data & AI</option>
+                    <option>Career & Communication</option>
+                    <option>Academic Support</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="skillLevel">Learner level</label
+                  ><select id="skillLevel" ng-model="newSession.level">
+                    <option>Beginner</option>
+                    <option>Intermediate</option>
+                    <option>Advanced</option>
+                    <option>All levels</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="sessionMode">Teaching format</label
+                  ><select
+                    id="sessionMode"
+                    ng-model="newSession.mode"
+                    ng-change="onModeChange()"
+                  >
+                    <option>Live online</option>
+                    <option>In person on campus</option>
+                    <option>Recorded mini lesson</option>
+                    <option>Pair programming</option>
+                    <option>Quiz / practice session</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="sessionDuration">Duration</label
+                  ><select id="sessionDuration" ng-model="newSession.duration">
+                    <option>15 minutes</option>
+                    <option>30 minutes</option>
+                    <option>45 minutes</option>
+                    <option>60 minutes</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="tokenReward">Token reward</label
+                  ><select id="tokenReward" ng-model="newSession.reward">
+                    <option value="2">2 Skill Tokens</option>
+                    <option value="3">3 Skill Tokens</option>
+                    <option value="5">5 Skill Tokens</option></select
+                  ><small
+                    >Added to your wallet when you complete the session after a
+                    student has taken part.</small
+                  >
+                </div>
+                <div class="full-field format-panel">
+                  <!-- LIVE ONLINE -->
+                  <div ng-if="newSession.mode === 'Live online'">
+                    <div class="format-head">
+                      <span>📡</span>
+                      <div>
+                        <b>Teach live on SkillSync</b>
+                        <small
+                          >After publishing, open the session and press
+                          <em>Go live</em>. Learners join from their browser with
+                          one click: camera, microphone or screen share.</small
+                        >
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label for="meetingLink">Backup meeting link (optional)</label>
+                      <input
+                        id="meetingLink"
+                        type="text"
+                        inputmode="url"
+                        ng-model="newSession.details.meetingLink"
+                        placeholder="https://meet.google.com/..."
+                      />
+                      <small>Shown to learners if you prefer Google Meet or Zoom.</small>
+                    </div>
+                  </div>
+
+                  <!-- IN PERSON -->
+                  <div ng-if="newSession.mode === 'In person on campus'">
+                    <div class="format-head">
+                      <span>📍</span>
+                      <div>
+                        <b>Meet on campus</b>
+                        <small>Tell learners where to find you.</small>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label for="sessionLocation">Location</label>
+                      <input
+                        id="sessionLocation"
+                        type="text"
+                        maxlength="100"
+                        ng-model="newSession.details.location"
+                        placeholder="e.g. Library, 2nd floor study room"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- PAIR PROGRAMMING -->
+                  <div ng-if="newSession.mode === 'Pair programming'">
+                    <div class="format-head">
+                      <span>👩‍💻</span>
+                      <div>
+                        <b>Code together</b>
+                        <small>Share a repository or starter project (optional).</small>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label for="repoLink">Repository link</label>
+                      <input
+                        id="repoLink"
+                        type="text"
+                        inputmode="url"
+                        ng-model="newSession.details.repoLink"
+                        placeholder="https://github.com/you/starter-project"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- RECORDED MINI LESSON -->
+                  <div ng-if="newSession.mode === 'Recorded mini lesson'">
+                    <div class="format-head">
+                      <span>🎬</span>
+                      <div>
+                        <b>Add your recorded lesson</b>
+                        <small
+                          >Upload a video or record one right here. Learners can
+                          watch it any time.</small
+                        >
+                      </div>
+                    </div>
+
+                    <div class="video-box">
+                      <!-- nothing yet -->
+                      <div
+                        class="video-actions"
+                        ng-if="!newSession.details.video && !uploadState.active && recorder.state !== 'recording'"
+                      >
+                        <label class="btn-secondary btn-small file-btn">
+                          📁 Choose a video file
+                          <input
+                            type="file"
+                            accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov"
+                            ss-file-change="onVideoPicked(files)"
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          class="btn-secondary btn-small"
+                          ng-if="recorder.supported"
+                          ng-click="startRecording()"
+                        >
+                          🔴 Record with camera
+                        </button>
+                        <small
+                          >MP4, WebM or MOV · up to {{limits.maxVideoMB}} MB</small
+                        >
+                      </div>
+
+                      <!-- camera preview while recording (always in the DOM, shown on demand) -->
+                      <div class="recording-panel" ng-show="recorder.state === 'recording'">
+                        <video id="recPreview" playsinline muted></video>
+                        <div class="recording-bar">
+                          <span class="rec-dot"></span>
+                          <strong>{{recorder.seconds | secondsTime}}</strong>
+                          <button type="button" class="btn-primary btn-small" ng-click="stopRecording()">
+                            ■ Stop &amp; use recording
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- uploading -->
+                      <div class="upload-progress" ng-if="uploadState.active">
+                        <div class="upload-line">
+                          <span>⬆ Uploading {{uploadState.name}}</span>
+                          <strong>{{uploadState.percent}}%</strong>
+                        </div>
+                        <div class="progress-track">
+                          <div class="progress-fill" ng-style="{width: uploadState.percent + '%'}"></div>
+                        </div>
+                        <button type="button" class="text-button" ng-click="cancelUpload()">Cancel</button>
+                      </div>
+
+                      <div class="upload-error" ng-if="uploadState.error" role="alert">
+                        {{uploadState.error}}
+                      </div>
+
+                      <!-- uploaded -->
+                      <div class="video-ready" ng-if="newSession.details.video && !uploadState.active">
+                        <video controls preload="metadata" ng-src="{{newSession.details.video.url}}"></video>
+                        <div class="video-ready-bar">
+                          <span
+                            >✓ {{newSession.details.video.originalName || 'Video'}} ·
+                            {{formatBytes(newSession.details.video.size)}}</span
+                          >
+                          <button type="button" class="text-button danger" ng-click="removeVideo()">
+                            Replace video
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="field" style="margin-top: 12px">
+                      <label for="recordingUrl">Or link to a recording (optional)</label>
+                      <input
+                        id="recordingUrl"
+                        type="text"
+                        inputmode="url"
+                        ng-model="newSession.details.recordingUrl"
+                        placeholder="https://youtu.be/..."
+                      />
+                      <small>Use this if your video is already on YouTube or Drive.</small>
+                    </div>
+                  </div>
+
+                  <!-- QUIZ -->
+                  <div ng-if="newSession.mode === 'Quiz / practice session'">
+                    <div class="format-head">
+                      <span>🧠</span>
+                      <div>
+                        <b>Build your quiz</b>
+                        <small
+                          >Add questions and pick the correct answer. Learners are
+                          graded instantly and you see how everyone did.</small
+                        >
+                      </div>
+                    </div>
+
+                    <div class="quiz-builder">
+                      <div class="quiz-q" ng-repeat="q in newSession.details.quiz track by $index">
+                        <div class="quiz-q-head">
+                          <b>Question {{$index + 1}}</b>
+                          <button
+                            type="button"
+                            class="text-button danger"
+                            ng-click="removeQuestion($index)"
+                            ng-disabled="newSession.details.quiz.length <= 1"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          maxlength="200"
+                          ng-model="q.question"
+                          placeholder="Type your question"
+                          aria-label="Question {{$index + 1}}"
+                        />
+                        <div class="quiz-opt" ng-repeat="opt in q.options track by $index">
+                          <input
+                            type="radio"
+                            class="quiz-correct"
+                            name="correct{{$parent.$index}}"
+                            ng-model="q.correctIndex"
+                            ng-value="$index"
+                            aria-label="Mark option {{$index + 1}} as the correct answer"
+                            title="Mark as correct answer"
+                          />
+                          <input
+                            type="text"
+                            maxlength="100"
+                            ng-model="q.options[$index]"
+                            placeholder="Option {{$index + 1}}"
+                            aria-label="Option {{$index + 1}}"
+                          />
+                          <button
+                            type="button"
+                            class="opt-remove"
+                            ng-click="removeOption(q, $index)"
+                            ng-disabled="q.options.length <= 2"
+                            aria-label="Remove option"
+                          >
+                            ×
+                          </button>
+                        </div>
+                        <div class="quiz-q-foot">
+                          <button
+                            type="button"
+                            class="text-button"
+                            ng-click="addOption(q)"
+                            ng-disabled="q.options.length >= 6"
+                          >
+                            ＋ Add option
+                          </button>
+                          <small>● = correct answer</small>
+                        </div>
+                        <input
+                          type="text"
+                          maxlength="200"
+                          ng-model="q.explanation"
+                          placeholder="Why is it correct? (optional, shown after answering)"
+                          aria-label="Explanation"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        class="btn-secondary btn-small"
+                        ng-click="addQuestion()"
+                        ng-disabled="newSession.details.quiz.length >= limits.maxQuizQuestions"
+                      >
+                        ＋ Add question ({{newSession.details.quiz.length}}/{{limits.maxQuizQuestions}})
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="field full-field">
+                  <label for="sessionDescription"
+                    >What will learners be able to do? <span>*</span></label
+                  ><textarea
+                    id="sessionDescription"
+                    ng-model="newSession.description"
+                    rows="4"
+                    placeholder="Share the key topics, a practical activity, and what learners will take away..."
+                    required
+                    maxlength="400"
+                  ></textarea>
+                  <div class="field-foot">
+                    <small>Tip: add a hands-on task or a mini challenge.</small
+                    ><small
+                      >{{(newSession.description || '').length}}/400</small
+                    >
+                  </div>
+                </div>
+                <div class="field full-field">
+                  <label for="sessionActivity">Make it interactive</label
+                  ><select id="sessionActivity" ng-model="newSession.activity">
+                    <option>Live demo + learner practice</option>
+                    <option>Mini quiz at the end</option>
+                    <option>Build something together</option>
+                    <option>Debug this challenge</option>
+                    <option>Flashcards / rapid questions</option>
+                    <option>Feedback and review</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-actions">
+                <span class="form-note"
+                  ><span>🔒</span> Your sessions are saved to your account. You
+                  can edit or remove them below.</span
+                ><span class="form-buttons"
+                  ><button
+                    class="btn-secondary"
+                    type="button"
+                    ng-if="editingId"
+                    ng-click="cancelEdit(sessionForm)"
+                  >
+                    Cancel</button
+                  ><button
+                    class="btn-primary"
+                    type="submit"
+                    ng-disabled="saving || uploadState.active"
+                  >
+                    {{saving ? 'Saving...' : (editingId ? 'Save changes' : 'Publish teaching session')}}
+                    <span>→</span>
+                  </button></span
+                >
+              </div>
+            </form>
+          </div>
+          <aside class="impact-panel">
+            <div class="impact-illustration">
+              <span class="impact-spark">✦</span>
+              <div class="impact-circle"><span>↗</span></div>
+              <div class="impact-mini-card">
+                <b>Learn</b><span>Practice</span><b>Grow</b>
+              </div>
+            </div>
+            <span class="eyebrow">A GOOD LESSON HAS</span>
+            <h3>More doing.<br />Less just listening.</h3>
+            <ul class="check-list">
+              <li>
+                <span>✓</span>
+                <div>
+                  <b>One clear outcome</b
+                  ><small>Tell learners what they will be able to do.</small>
+                </div>
+              </li>
+              <li>
+                <span>✓</span>
+                <div>
+                  <b>A real example</b
+                  ><small>Connect the concept to a practical task.</small>
+                </div>
+              </li>
+              <li>
+                <span>✓</span>
+                <div>
+                  <b>A tiny challenge</b
+                  ><small>Let learners try it and ask questions.</small>
+                </div>
+              </li>
+            </ul>
+            <div class="token-callout">
+              <span>🪙</span>
+              <div>
+                <b>Knowledge comes full circle</b>
+                <p>
+                  Teach a skill, help a peer, and earn tokens to learn something
+                  new yourself.
+                </p>
+              </div>
+            </div>
+          </aside>
+        </section>
+
+        <section class="my-sessions" id="my-sessions">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">YOUR TEACHING SPACE</span>
+              <h2>
+                My teaching sessions
+                <span class="count-pill">{{sessions.length}}</span>
+              </h2>
+              <p>
+                Open a session to go live, watch results or share it. Everything
+                here is saved to your account.
+              </p>
+            </div>
+            <div class="session-filters">
+              <button
+                ng-repeat="f in sessionFilters"
+                type="button"
+                ng-click="$parent.sessionFilter = f.value"
+                ng-class="{'filter-active': sessionFilter === f.value}"
+              >
+                {{f.label}}
+              </button>
+            </div>
+          </div>
+
+          <div class="load-note" ng-if="loading">Loading your sessions...</div>
+          <div class="load-note error" ng-if="loadError">
+            {{loadError}} <button class="text-button" ng-click="reload()">Try again</button>
+          </div>
+
+          <div class="session-grid" ng-if="!loading && filteredSessions().length">
+            <article
+              class="session-card"
+              ng-class="{'is-live': session.live.isLive, 'is-done': session.status === 'completed'}"
+              ng-repeat="session in filteredSessions() track by session.id"
+            >
+              <div class="session-card-top">
+                <span class="session-category">{{session.category}}</span>
+                <span class="live-pill" ng-if="session.live.isLive">
+                  ● LIVE · {{session.live.viewers}} watching
+                </span>
+                <span class="status-pill" ng-if="session.status === 'completed'">✓ Completed</span>
+                <button
+                  class="remove-session"
+                  type="button"
+                  ng-click="removeSession(session)"
+                  aria-label="Delete session"
+                  title="Delete session"
+                >
+                  ×
+                </button>
+              </div>
+              <h3>{{session.title}}</h3>
+              <p>{{session.description}}</p>
+              <div class="session-tags">
+                <span>📘 {{session.skill}}</span
+                ><span>◷ {{session.duration}}</span
+                ><span>{{modeIcon(session.mode)}} {{formatSummary(session)}}</span
+                ><span>👥 {{session.participantCount}} learner<span ng-if="session.participantCount !== 1">s</span></span>
+              </div>
+              <div class="session-card-bottom">
+                <span class="mode-label">{{session.mode}} · {{session.level}}</span
+                ><strong ng-if="session.status !== 'completed'">🪙 {{session.reward}} tokens</strong
+                ><strong ng-if="session.status === 'completed'">🪙 +{{session.tokensAwarded}} earned</strong>
+              </div>
+              <div class="session-actions">
+                <button class="btn-primary btn-small" type="button" ng-click="openSession(session)">
+                  {{session.live.isLive ? 'Open live room' : (session.mode === 'Live online' && session.status === 'published' ? 'Open / Go live' : 'Open')}}
+                </button>
+                <button
+                  class="btn-secondary btn-small"
+                  type="button"
+                  ng-if="session.status === 'published'"
+                  ng-click="editSession(session)"
+                >
+                  Edit
+                </button>
+                <button
+                  class="btn-secondary btn-small"
+                  type="button"
+                  ng-if="session.status === 'published'"
+                  ng-click="completeSession(session)"
+                  ng-disabled="!session.canComplete"
+                  title="{{session.canComplete ? 'Mark as taught and earn your tokens' : 'Available once a student has taken part'}}"
+                >
+                  ✓ Complete
+                </button>
+              </div>
+              <small class="waiting-note" ng-if="session.status === 'published' && !session.canComplete">
+                Waiting for your first learner. Tokens are paid after someone takes part.
+              </small>
+            </article>
+          </div>
+          <div class="empty-state" ng-if="!loading && !loadError && !filteredSessions().length">
+            <div class="empty-icon">✦</div>
+            <h3>{{sessions.length ? 'No sessions in this format yet' : 'Your teaching journey starts here'}}</h3>
+            <p>
+              Publish a session and it will appear here, even after you refresh.
+              Try a mini quiz, a recorded lesson or a live class.
+            </p>
+            <a href="#create-session" class="btn-secondary"
+              >Create a session <span>↑</span></a
+            >
+          </div>
+        </section>
+
+        <section class="community" id="community">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">LEARN FROM PEERS</span>
+              <h2>
+                Join a session
+                <span class="count-pill">{{community.length}}</span>
+              </h2>
+              <p>
+                Sessions other students have published. Live classes appear
+                first.
+              </p>
+            </div>
+            <div class="community-filters">
+              <input
+                type="text"
+                ng-model="communityFilter.q"
+                ng-model-options="{debounce: 350}"
+                ng-change="loadCommunity()"
+                placeholder="Search skill or title"
+                aria-label="Search community sessions"
+              />
+              <select
+                ng-model="communityFilter.mode"
+                ng-change="loadCommunity()"
+                aria-label="Filter by format"
+              >
+                <option value="all">All formats</option>
+                <option>Live online</option>
+                <option>In person on campus</option>
+                <option>Recorded mini lesson</option>
+                <option>Pair programming</option>
+                <option>Quiz / practice session</option>
+              </select>
+            </div>
+          </div>
+          <div class="session-grid" ng-if="community.length">
+            <article
+              class="session-card"
+              ng-class="{'is-live': s.live.isLive}"
+              ng-repeat="s in community track by s.id"
+            >
+              <div class="session-card-top">
+                <span class="session-category">{{s.category}}</span>
+                <span class="live-pill" ng-if="s.live.isLive">● LIVE NOW</span>
+              </div>
+              <h3>{{s.title}}</h3>
+              <p>{{s.description}}</p>
+              <div class="session-tags">
+                <span>🎓 {{s.teacher || 'A student'}}</span
+                ><span>📘 {{s.skill}}</span
+                ><span>◷ {{s.duration}}</span
+                ><span>{{modeIcon(s.mode)}} {{formatSummary(s)}}</span>
+              </div>
+              <div class="session-card-bottom">
+                <span class="mode-label">{{s.mode}} · {{s.level}}</span>
+                <a
+                  class="btn-primary btn-small"
+                  ng-href="teachSession.html?id={{s.id}}"
+                  >{{s.live.isLive ? 'Join live' : 'Open'}}</a
+                >
+              </div>
+            </article>
+          </div>
+          <div class="empty-state" ng-if="!communityLoading && !community.length">
+            <div class="empty-icon">👥</div>
+            <h3>No sessions from other students yet</h3>
+            <p>
+              When classmates publish sessions you will see them here. Invite a
+              friend to teach something too.
+            </p>
+          </div>
+        </section>
+        <div class="toast-message" ng-if="toastMessage" role="status">
+          {{toastMessage}}
+        </div>
+      </main>
+    </div>
+    <div class="chatbot-container" ng-controller="ChatbotController">
+      <!-- Chat Window -->
+      <div class="chat-window" ng-class="{'active': isChatOpen}">
+        <div class="chat-header">
+          <div class="chat-header-info">
+            <span class="chat-avatar">∞</span>
+            <div>
+              <h4>SkillSync Assistant</h4>
+              <p>Online</p>
+            </div>
+          </div>
+          <button class="chat-close" ng-click="closeChat()">✕</button>
+        </div>
+
+        <div class="chat-body" id="chatBody">
+          <div
+            ng-repeat="msg in messages"
+            ng-class="{'bot-message': msg.type === 'bot', 'user-message': msg.type === 'user'}"
+          >
+            <p>{{msg.text}}</p>
+          </div>
+        </div>
+
+        <div class="chat-footer">
+          <input
+            type="text"
+            ng-model="userMessage"
+            ng-keypress="handleKeyPress($event)"
+            placeholder="Type your message..."
+          />
+          <button ng-click="sendMessage()">➤</button>
+        </div>
+      </div>
+
+      <!-- Floating Button -->
+      <button class="chatbot-btn" ng-click="toggleChat()">
+        <img src="../images/chatbot.png" alt="Chatbot" />
+      </button>
+    </div>
+
+    <script src="../js/app.js"></script>
+    <script src="../Controllers/teachSkillsController.js"></script>
+    <script src="../Controllers/chatbotController.js"></script>
+    <script src="../Controllers/headerController.js"></script>
+  </body>
+</html>
