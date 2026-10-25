@@ -47,7 +47,7 @@ app.controller("HomeController", function ($scope, $http) {
 
   $scope.loadProfileCompletion = function () {
     $http
-      .get("/api/resume?userId=demo-user")
+      .get("/api/resume")
       .then(function (res) {
         if (res.data) {
           var resume = res.data;
@@ -111,6 +111,13 @@ app.controller("HomeController", function ($scope, $http) {
 
   // Load profile completion when dashboard opens
   $scope.loadProfileCompletion();
+
+  // Real token balance from the user's wallet (same source as Wallet page)
+  $http.get("/api/wallet").then(function (res) {
+    if (res.data && res.data.success) {
+      $scope.tokens = res.data.wallet.balance;
+    }
+  });
 
   // ---------- Popular skills shown on the dashboard home page ----------
   $scope.popularSkills = [
