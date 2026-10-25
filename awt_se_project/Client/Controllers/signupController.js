@@ -55,7 +55,7 @@ app.controller("SignupController", function ($scope, $http, $timeout) {
         $scope.signupButtonText = "Creating Account...";
         $scope.errorMessage = "";
 
-        $http.post("http://localhost:3000/api/auth/register", {
+        $http.post("/api/auth/register", {
             name: $scope.user.name,
             email: $scope.user.email,
             password: $scope.user.password

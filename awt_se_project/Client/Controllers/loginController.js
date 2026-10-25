@@ -42,7 +42,7 @@ app.controller("LoginController", function ($scope, $http, $timeout) {
         $scope.loginButtonText = "Signing In...";
         $scope.errorMessage = "";
 
-        $http.post("http://localhost:3000/api/auth/login", {
+        $http.post("/api/auth/login", {
             email: $scope.user.email,
             password: $scope.user.password,
             remember: $scope.user.remember
