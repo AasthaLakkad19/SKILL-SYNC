@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en" ng-app="skillSyncApp">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SkillSync - Teaching Session</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/teachSkills.css" />
+    <link rel="stylesheet" href="../css/desktop.css" />
+    <link rel="stylesheet" href="../css/home.css" />
+
+    <link rel="stylesheet" href="../css/mobile.css" />
+    <link rel="stylesheet" href="../css/sidebar_header.css" />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  </head>
+  <body ng-controller="TeachSessionController">
+    <div class="dashboard" ng-class="{'sidebar-open': sidebarOpen}">
+      <header class="top-header" ng-controller="HeaderController">
+        <div ng-include="'../components/header.html'"></div>
+      </header>
+
+      <aside class="sidebar" ng-class="{'sidebar-open': sidebarOpen}">
+        <nav>
+          <a href="firstLogin.html" class="nav-item"
+            ><span>🏠</span><span>Home</span></a
+          >
+          <a href="learnSkills.html" class="nav-item"
+            ><span>📚</span><span>Learn Skills</span></a
+          >
+          <a href="teachSkills.html" class="nav-item active"
+            ><span>🎓</span><span>Teach Skills</span></a
+          >
+          <a href="findTeam.html" class="nav-item"
+            ><span>👥</span><span>Find Teammates</span></a
+          >
+          <a href="profile.html" class="nav-item"
+            ><span>👤</span><span>My Profile</span></a
+          >
+          <div class="nav-submenu">
+            <a href="profile.html">Personal Information</a>
+            <a href="achievements.html">🏆 My Achievements</a>
+            <a href="wallet.html">🪙 My Wallet</a>
+            <a href="projects.html">📂 My Projects</a>
+            <a href="buildResume.html">📄 Build Resume</a>
+          </div>
+          <a href="settings.html" class="nav-item"
+            ><span>⚙️</span><span>Settings</span></a
+          >
+        </nav>
+      </aside>
+
+      <main class="main-content teach-page session-page">
+        <a href="teachSkills.html" class="back-link">← Back to Teach Skills</a>
+
+        <div class="load-note" ng-if="loading">Loading session...</div>
+
+        <div class="empty-state" ng-if="error">
+          <div class="empty-icon">🔍</div>
+          <h3>{{error}}</h3>
+          <a href="teachSkills.html" class="btn-secondary">Go to Teach Skills</a>
+        </div>
+
+        <div class="session-view" ng-if="s">
+          <!-- ===== Overview ===== -->
+          <section class="session-hero-card">
+            <div class="hero-meta">
+              <span class="session-category">{{s.category}}</span>
+              <span class="live-pill" ng-if="s.live.isLive">● LIVE · {{s.live.viewers}} watching</span>
+              <span class="status-pill" ng-if="s.status === 'completed'">✓ Completed</span>
+            </div>
+            <h1>{{s.title}}</h1>
+            <p class="teacher-line">
+              {{modeIcon(s.mode)}} {{s.mode}} · {{s.level}} · {{s.duration}} ·
+              Taught by <b>{{isOwner ? 'you' : (s.teacher || 'a student')}}</b>
+            </p>
+            <p class="hero-desc">{{s.description}}</p>
+            <div class="session-tags">
+              <span>📘 {{s.skill}}</span>
+              <span>🎮 {{s.activity}}</span>
+              <span>👥 {{s.participantCount}} learner<span ng-if="s.participantCount !== 1">s</span></span>
+              <span ng-if="!isOwner">🪙 Teacher earns {{s.reward}} tokens</span>
+            </div>
+          </section>
+
+          <!-- ===== Teacher tools ===== -->
+          <section class="panel owner-panel" ng-if="isOwner">
+            <div class="panel-head">
+              <h2>Teacher tools</h2>
+              <span class="panel-sub">Only you can see this</span>
+            </div>
+            <div ng-if="s.status === 'published'">
+              <p class="panel-text">
+                Share this page with classmates. Once at least one student has
+                taken part you can complete the session and receive
+                <b>{{s.reward}} Skill Tokens</b>.
+              </p>
+              <div class="owner-actions">
+                <button class="btn-secondary btn-small" ng-click="copyLink()">🔗 Copy session link</button>
+                <button
+                  class="btn-primary btn-small"
+                  ng-click="completeSession()"
+                  ng-disabled="busy || !s.canComplete"
+                >
+                  ✓ Complete &amp; earn {{s.reward}} 🪙
+                </button>
+              </div>
+              <small class="waiting-note" ng-if="!s.canComplete">
+                Waiting for your first learner (a student who watches, joins, takes the quiz or attends live).
+              </small>
+            </div>
+            <div class="done-box" ng-if="s.status === 'completed'">
+              🎉 Completed. You earned <b>{{s.tokensAwarded}} Skill Tokens</b>. They are in your wallet.
+              <a href="wallet.html">View wallet →</a>
+            </div>
+          </section>
+
+          <!-- ===== LIVE ONLINE ===== -->
+          <section class="panel" ng-if="s.mode === 'Live online'">
+            <div class="panel-head">
+              <h2>📡 Live class</h2>
+              <span class="panel-sub" ng-if="live.state === 'live' || live.state === 'watching'">{{live.viewers}} watching</span>
+            </div>
+
+            <div
+              class="video-stage"
+              ng-show="live.state === 'starting' || live.state === 'live' || live.state === 'joining' || live.state === 'watching'"
+            >
+              <video id="liveVideo" playsinline autoplay></video>
+              <div class="stage-overlay" ng-if="live.state === 'starting' || live.state === 'joining'">
+                <span class="spinner"></span>{{live.message}}
+              </div>
+              <div class="stage-overlay soft" ng-if="live.state === 'watching' && !live.hostOnline">
+                Teacher is reconnecting...
+              </div>
+              <button class="tap-play" ng-if="live.needsTap" ng-click="tapToPlay()">▶ Tap to play with sound</button>
+              <div class="stage-badge" ng-if="live.state === 'live'">● You're live</div>
+            </div>
+
+            <div class="notice" ng-class="{error: live.state === 'error'}" ng-if="(live.state === 'error' || live.state === 'ended') && live.message" role="status">
+              {{live.message}}
+            </div>
+
+            <!-- teacher controls -->
+            <div class="live-controls" ng-if="isOwner && s.status === 'published'">
+              <div ng-if="live.state !== 'live' && live.state !== 'starting'">
+                <button class="btn-primary" ng-click="goLive()">
+                  {{s.live.isLive ? '🔴 Resume your live class' : '🔴 Go live'}}
+                </button>
+                <p class="panel-text">
+                  Your browser will ask for camera and microphone access. Learners
+                  who open this page see a <em>Join</em> button as soon as you are
+                  live. You can switch to screen sharing at any time.
+                </p>
+              </div>
+              <div class="control-row" ng-if="live.state === 'live'">
+                <button class="btn-secondary btn-small" ng-click="toggleMic()">{{live.micOn ? '🎙 Mute' : '🔇 Unmute'}}</button>
+                <button class="btn-secondary btn-small" ng-click="toggleCam()" ng-disabled="live.sharing">{{live.camOn ? '📷 Camera off' : '📷 Camera on'}}</button>
+                <button class="btn-secondary btn-small" ng-click="toggleScreen()">{{live.sharing ? '🖥 Stop sharing' : '🖥 Share screen'}}</button>
+                <button class="btn-primary btn-small end-btn" ng-click="endLive()">■ End class</button>
+              </div>
+            </div>
+
+            <!-- learner controls -->
+            <div class="live-controls" ng-if="!isOwner">
+              <div ng-if="live.state === 'idle' || live.state === 'ended' || live.state === 'error'">
+                <button class="btn-primary" ng-if="s.live.isLive && live.state !== 'error'" ng-click="joinLive()">▶ Join live class</button>
+                <button class="btn-primary" ng-if="s.live.isLive && live.state === 'error'" ng-click="rejoinLive()">↻ Rejoin</button>
+                <div class="waiting-box" ng-if="!s.live.isLive && s.status === 'published'">
+                  <span class="spinner dark"></span>
+                  <div>
+                    <b>Waiting for the teacher to go live</b>
+                    <small>This page checks automatically. You'll see a Join button the moment the class starts.</small>
+                  </div>
+                </div>
+              </div>
+              <div class="control-row" ng-if="live.state === 'joining' || live.state === 'watching'">
+                <button class="btn-secondary btn-small" ng-click="leaveLive()">Leave class</button>
+              </div>
+            </div>
+
+            <div class="backup-link" ng-if="s.details.meetingLink">
+              Prefer another app? The teacher also shared a meeting link:
+              <a ng-href="{{s.details.meetingLink}}" target="_blank" rel="noopener noreferrer">Open meeting link ↗</a>
+            </div>
+          </section>
+
+          <!-- ===== RECORDED ===== -->
+          <section class="panel" ng-if="s.mode === 'Recorded mini lesson'">
+            <div class="panel-head"><h2>🎬 Lesson video</h2></div>
+            <video
+              class="lesson-video"
+              ng-if="s.details.video"
+              controls
+              preload="metadata"
+              playsinline
+              ng-src="{{s.details.video.url}}"
+              ss-video-play="onVideoPlay()"
+            ></video>
+            <div class="backup-link" ng-if="s.details.recordingUrl">
+              <a
+                class="btn-secondary btn-small"
+                ng-href="{{s.details.recordingUrl}}"
+                target="_blank"
+                rel="noopener noreferrer"
+                ng-click="onVideoPlay()"
+                >▶ Watch the recording ↗</a
+              >
+            </div>
+            <p class="panel-text" ng-if="!isOwner && s.joined">✓ The teacher can see that you watched this lesson.</p>
+          </section>
+
+          <!-- ===== QUIZ ===== -->
+          <section class="panel" ng-if="s.mode === 'Quiz / practice session'">
+            <div class="panel-head">
+              <h2>🧠 Quiz · {{s.details.quizCount}} question<span ng-if="s.details.quizCount !== 1">s</span></h2>
+              <span class="best-pill" ng-if="s.myBest">Your best: {{s.myBest.score}}/{{s.myBest.total}} · {{s.myBest.attempts}} attempt<span ng-if="s.myBest.attempts !== 1">s</span></span>
+            </div>
+
+            <div ng-if="!quiz.active">
+              <p class="panel-text">
+                {{isOwner ? 'Try your own quiz to see what learners see. Preview attempts are not saved.' : 'Answer every question, then submit to see your score and the explanations. You can retry as often as you like.'}}
+              </p>
+              <button class="btn-primary" ng-click="startQuiz()" ng-disabled="s.status === 'completed' && !isOwner">
+                {{isOwner ? 'Preview the quiz' : (s.myBest ? 'Try again' : 'Start the quiz')}}
+              </button>
+
+              <!-- teacher's answer key -->
+              <div class="answer-key" ng-if="isOwner">
+                <h3>Answer key</h3>
+                <div class="key-q" ng-repeat="q in s.details.quiz track by $index">
+                  <b>{{$index + 1}}. {{q.question}}</b>
+                  <ul>
+                    <li ng-repeat="opt in q.options track by $index" ng-class="{'is-correct': $index === q.correctIndex}">
+                      {{$index === q.correctIndex ? '✓' : '·'}} {{opt}}
+                    </li>
+                  </ul>
+                  <small ng-if="q.explanation">💡 {{q.explanation}}</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="quiz-run" ng-if="quiz.active">
+              <div class="quiz-progress" ng-if="!quiz.result">
+                <span>{{answeredCount()}} of {{s.details.quizCount}} answered</span>
+                <div class="progress-track"><div class="progress-fill" ng-style="{width: (answeredCount() / s.details.quizCount * 100) + '%'}"></div></div>
+              </div>
+
+              <div class="score-card" ng-if="quiz.result">
+                <div class="score-ring">{{quiz.result.score}}<small>/{{quiz.result.total}}</small></div>
+                <div>
+                  <h3>{{quiz.result.percent}}% · {{scoreMessage()}}</h3>
+                  <p ng-if="!quiz.result.saved">Preview only. This attempt isn't saved.</p>
+                  <p ng-if="quiz.result.saved">Your score was sent to the teacher.</p>
+                  <button class="btn-secondary btn-small" ng-click="startQuiz()">↻ Try again</button>
+                </div>
+              </div>
+
+              <div class="quiz-card" ng-repeat="q in s.details.quiz track by $index" ng-init="qi = $index">
+                <div class="q-title"><span>{{qi + 1}}</span>{{q.question}}</div>
+                <button
+                  type="button"
+                  class="q-option"
+                  ng-repeat="opt in q.options track by $index"
+                  ng-class="optionClass(qi, $index)"
+                  ng-click="pick(qi, $index)"
+                  ng-disabled="quiz.result"
+                >
+                  <span class="opt-letter">{{['A','B','C','D','E','F'][$index]}}</span>{{opt}}
+                </button>
+                <div class="q-explain" ng-if="quiz.result" ng-class="{ok: quiz.result.results[qi].correct}">
+                  <b>{{quiz.result.results[qi].correct ? '✓ Correct' : (quiz.result.results[qi].chosen === null ? '— Skipped' : '✗ Not quite')}}</b>
+                  <span ng-if="quiz.result.results[qi].explanation"> {{quiz.result.results[qi].explanation}}</span>
+                </div>
+              </div>
+
+              <div class="quiz-submit" ng-if="!quiz.result">
+                <button class="btn-primary" ng-click="submitQuiz()" ng-disabled="quiz.submitting">
+                  {{quiz.submitting ? 'Checking...' : 'Submit answers'}}
+                </button>
+              </div>
+            </div>
+
+            <!-- teacher: learner results -->
+            <div class="results-box" ng-if="isOwner">
+              <div class="panel-head">
+                <h3>Learner results</h3>
+                <button class="text-button" ng-click="refreshAttempts()">↻ Refresh</button>
+              </div>
+              <p class="panel-text" ng-if="!attemptsData || !attemptsData.count">No one has taken the quiz yet.</p>
+              <div ng-if="attemptsData && attemptsData.count">
+                <p class="panel-text">{{attemptsData.count}} attempt<span ng-if="attemptsData.count !== 1">s</span> · average {{attemptsData.average}}%</p>
+                <div class="table-scroll">
+                  <table class="results-table">
+                    <thead><tr><th>Learner</th><th>Score</th><th>%</th><th>When</th></tr></thead>
+                    <tbody>
+                      <tr ng-repeat="a in attemptsData.attempts track by $index">
+                        <td>{{a.learner}}</td>
+                        <td>{{a.score}}/{{a.total}}</td>
+                        <td>{{a.percent}}%</td>
+                        <td>{{a.at | date:'d MMM, h:mm a'}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===== IN PERSON ===== -->
+          <section class="panel" ng-if="s.mode === 'In person on campus'">
+            <div class="panel-head"><h2>📍 On campus</h2></div>
+            <p class="panel-text">
+              <b>Where:</b> {{s.details.location || 'The teacher will share the place with learners who join.'}}
+            </p>
+            <div ng-if="!isOwner">
+              <button class="btn-primary" ng-if="!s.joined && s.status === 'published'" ng-click="joinSession()" ng-disabled="busy">✋ I'll attend</button>
+              <div class="done-box" ng-if="s.joined">✓ You're on the list. The teacher can see that you joined.</div>
+            </div>
+          </section>
+
+          <!-- ===== PAIR PROGRAMMING ===== -->
+          <section class="panel" ng-if="s.mode === 'Pair programming'">
+            <div class="panel-head"><h2>👩‍💻 Pair programming</h2></div>
+            <p class="panel-text" ng-if="s.details.repoLink">
+              Starter project:
+              <a ng-href="{{s.details.repoLink}}" target="_blank" rel="noopener noreferrer">{{s.details.repoLink}} ↗</a>
+            </p>
+            <p class="panel-text" ng-if="!s.details.repoLink">The teacher will share the project with learners who join.</p>
+            <div ng-if="!isOwner">
+              <button class="btn-primary" ng-if="!s.joined && s.status === 'published'" ng-click="joinSession()" ng-disabled="busy">🤝 Join this session</button>
+              <div class="done-box" ng-if="s.joined">✓ You joined this session. The teacher can see that you're in.</div>
+            </div>
+          </section>
+        </div>
+
+        <div class="toast-message" ng-if="toastMessage" role="status">
+          {{toastMessage}}
+        </div>
+      </main>
+    </div>
+    <div class="chatbot-container" ng-controller="ChatbotController">
+      <!-- Chat Window -->
+      <div class="chat-window" ng-class="{'active': isChatOpen}">
+        <div class="chat-header">
+          <div class="chat-header-info">
+            <span class="chat-avatar">∞</span>
+            <div>
+              <h4>SkillSync Assistant</h4>
+              <p>Online</p>
+            </div>
+          </div>
+          <button class="chat-close" ng-click="closeChat()">✕</button>
+        </div>
+
+        <div class="chat-body" id="chatBody">
+          <div
+            ng-repeat="msg in messages"
+            ng-class="{'bot-message': msg.type === 'bot', 'user-message': msg.type === 'user'}"
+          >
+            <p>{{msg.text}}</p>
+          </div>
+        </div>
+
+        <div class="chat-footer">
+          <input
+            type="text"
+            ng-model="userMessage"
+            ng-keypress="handleKeyPress($event)"
+            placeholder="Type your message..."
+          />
+          <button ng-click="sendMessage()">➤</button>
+        </div>
+      </div>
+
+      <!-- Floating Button -->
+      <button class="chatbot-btn" ng-click="toggleChat()">
+        <img src="../images/chatbot.png" alt="Chatbot" />
+      </button>
+    </div>
+
+    <script src="../js/app.js"></script>
+    <script src="../Controllers/teachSessionController.js"></script>
+    <script src="../Controllers/chatbotController.js"></script>
+    <script src="../Controllers/headerController.js"></script>
+  </body>
+</html>
