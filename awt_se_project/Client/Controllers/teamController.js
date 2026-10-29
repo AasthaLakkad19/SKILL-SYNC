@@ -47,15 +47,21 @@ angular.module("skillSyncApp").controller("TeammateController", [
     }
 
     // ---- Load (filtering below stays instant and client-side) ----
-    $http
-      .get(API + "?limit=100", authConfig())
-      .then(function (res) {
-        $scope.teammates = res.data.teammates;
-      })
-      .catch(handleError)
-      .finally(function () {
-        $scope.loaded = true;
-      });
+    function loadTeammates() {
+      return $http
+        .get(API + "?limit=100", authConfig())
+        .then(function (res) {
+          $scope.teammates = res.data.teammates;
+        })
+        .catch(handleError)
+        .finally(function () {
+          $scope.loaded = true;
+        });
+    }
+    loadTeammates();
+
+    // The bell in the header accepted / declined a request -> refresh the buttons
+    $scope.$on("connections:changed", loadTeammates);
 
     // ---- Filtering (used by: teammates | filter:matchesFilters) ----
     // Same rules as the server's matchesFilters().
@@ -85,8 +91,7 @@ angular.module("skillSyncApp").controller("TeammateController", [
 
     // ---- Actions ----
     $scope.viewProfile = function (t) {
-      $window.location.href =
-        "profile.html?userId=" + encodeURIComponent(t.id) + "&name=" + encodeURIComponent(t.name);
+      $window.location.href = "profile.html?userId=" + encodeURIComponent(t.id);
     };
 
     $scope.connectLabel = function (t) {

@@ -18,6 +18,10 @@ router.post("/requests/:id/decline", c.declineRequest);
 
 router.get("/connections", c.myConnections);
 
+router.get("/notifications", c.notifications);
+router.post("/notifications/seen", c.markNotificationsSeen);
+
+router.get("/:userId/photo", c.getPhoto);
 router.get("/:userId", c.getTeammate);
 router.put("/:userId/connect", c.sendConnect);
 router.delete("/:userId/connect", c.removeConnect);

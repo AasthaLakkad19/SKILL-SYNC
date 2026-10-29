@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const User = require("../Models/User");
 const Profile = require("../Models/Profile");
+const Resume = require("../Models/Resume");
 const Project = require("../Models/Project");
 const Connection = require("../Models/Connection");
 const TeamPreference = require("../Models/TeamPreference");
@@ -34,6 +35,19 @@ const serverError = (res, label, err) => {
 
 const notFound = (res, what = "Teammate") => res.status(404).json({ message: `${what} not found` });
 
+// "B.Tech IT · 2026" from the first education row of the resume
+function resumeEducationLine(resume) {
+  const edu = resume && resume.education && resume.education[0];
+  if (!edu) return "";
+  const parts = [edu.degree, edu.year].map((p) => (p || "").trim()).filter(Boolean);
+  if (parts.length) return parts.join(" · ");
+  return (edu.college || "").trim();
+}
+
+// ?v= changes when the resume is saved, so browsers refetch a new photo
+const photoUrlFor = (userId, stamp) =>
+  `/api/teammates/${userId}/photo` + (stamp ? `?v=${new Date(stamp).getTime()}` : "");
+
 // "none" | "requested" (I asked) | "incoming" (they asked me) | "connected"
 function connectionState(conn, me) {
   if (!conn) return "none";
@@ -53,9 +67,18 @@ async function buildCards(req, { ids = null } = {}) {
   const users = await User.find(userFilter).select("name skills").limit(SCAN_LIMIT).lean();
   const userIds = users.map((u) => String(u._id));
 
-  const [profiles, prefs, conns, myProjects] = await Promise.all([
+  const [profiles, resumes, photoDocs, prefs, conns, myProjects] = await Promise.all([
     Profile.find({ userId: { $in: userIds } })
       .select("userId headline bio education availability skills.name")
+      .lean(),
+    // Resume = where the "Build Resume" page stores bio / education / skills / photo.
+    // The photo itself (a big base64 string) is NOT loaded here, see photoDocs.
+    Resume.find({ userId: { $in: userIds } })
+      .select("userId personalInfo.bio education skills updatedAt")
+      .lean(),
+    // Only ids of people who actually have a photo; the image is served by GET /:userId/photo
+    Resume.find({ userId: { $in: userIds }, "personalInfo.photo": { $nin: [null, ""] } })
+      .select("userId updatedAt")
       .lean(),
     TeamPreference.find({ userId: { $in: userIds } }).lean(),
     Connection.find({ $or: [{ requesterId: me }, { recipientId: me }] }).lean(),
@@ -63,6 +86,8 @@ async function buildCards(req, { ids = null } = {}) {
   ]);
 
   const profileBy = new Map(profiles.map((p) => [p.userId, p]));
+  const resumeBy = new Map(resumes.map((r) => [r.userId, r]));
+  const photoBy = new Map(photoDocs.map((r) => [r.userId, r]));
   const prefBy = new Map(prefs.map((p) => [p.userId, p]));
   const connBy = new Map(conns.map((c) => [c.requesterId === me ? c.recipientId : c.requesterId, c]));
   const wanted = new Set(myProjects.flatMap((p) => (p.tech || []).map((t) => t.toLowerCase())));
@@ -70,9 +95,16 @@ async function buildCards(req, { ids = null } = {}) {
   return users.map((u) => {
     const id = String(u._id);
     const profile = profileBy.get(id);
+    const resume = resumeBy.get(id);
+    const photoDoc = photoBy.get(id);
     const pref = prefBy.get(id);
 
-    const skills = mergeSkills(u.skills, ((profile && profile.skills) || []).map((s) => s.name)).slice(0, 8);
+    const resumeSkills = resume && resume.skills ? [...(resume.skills.technical || []), ...(resume.skills.tools || [])] : [];
+    const skills = mergeSkills(
+      u.skills,
+      ((profile && profile.skills) || []).map((s) => s.name),
+      resumeSkills
+    ).slice(0, 8);
     const interest = (pref && pref.interest) || deriveInterest(skills);
     const availability = (pref && pref.availability) || (profile && profile.availability) || "available";
     const connection = connectionState(connBy.get(id), me);
@@ -80,8 +112,13 @@ async function buildCards(req, { ids = null } = {}) {
     return {
       id,
       name: u.name,
-      education: educationLine(profile && profile.education),
-      description: ((profile && (profile.bio || profile.headline)) || "").trim(),
+      education: educationLine(profile && profile.education) || resumeEducationLine(resume),
+      description: (
+        (profile && (profile.bio || profile.headline)) ||
+        (resume && resume.personalInfo && resume.personalInfo.bio) ||
+        ""
+      ).trim(),
+      photoUrl: photoDoc ? photoUrlFor(id, photoDoc.updatedAt) : null,
       skills,
       interest,
       interestLabel: interest ? INTEREST_LABELS[interest] : "",
@@ -227,7 +264,10 @@ exports.sendConnect = async (req, res) => {
           return res.json({ connection: "requested", message: `Request already sent to ${target.name}` });
         }
         // They asked me first, so clicking Connect means "yes"
-        await Connection.updateOne({ _id: conn._id, status: "pending" }, { $set: { status: "accepted" } });
+        await Connection.updateOne(
+          { _id: conn._id, status: "pending" },
+          { $set: { status: "accepted", responseSeen: false } }
+        );
         return res.json({ connection: "connected", message: `You're now connected with ${target.name}` });
       }
 
@@ -316,7 +356,7 @@ exports.acceptRequest = async (req, res) => {
     // Atomic: only the recipient, only while pending, so double clicks are harmless
     const conn = await Connection.findOneAndUpdate(
       { _id: id, recipientId: uid(req), status: "pending" },
-      { $set: { status: "accepted" } },
+      { $set: { status: "accepted", responseSeen: false } },
       { new: true }
     );
     if (!conn) return notFound(res, "Request");
@@ -363,5 +403,98 @@ exports.myConnections = async (req, res) => {
     res.json({ connections: cards.sort((a, b) => a.name.localeCompare(b.name)).map(publicCard) });
   } catch (err) {
     serverError("MY CONNECTIONS ERROR:", err);
+  }
+};
+
+
+// ------------------------------------------------------------
+// PHOTO  (GET /api/teammates/:userId/photo)
+// The resume stores the picture as a base64 data URL. Sending it inside every
+// card would make the list huge, so cards carry a small URL and the browser
+// loads each image separately (and caches it).
+// ------------------------------------------------------------
+exports.getPhoto = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!mongoose.isValidObjectId(userId)) return notFound(res, "Photo");
+
+    const resume = await Resume.findOne({ userId }).select("personalInfo.photo").lean();
+    const photo = resume && resume.personalInfo && resume.personalInfo.photo;
+    const match = /^data:(image\/(?:png|jpe?g|gif|webp|avif));base64,([A-Za-z0-9+/=\s]+)$/i.exec(photo || "");
+    if (!match) return notFound(res, "Photo");
+
+    res.set({
+      "Content-Type": match[1].toLowerCase(),
+      "Cache-Control": "private, max-age=300",
+      "X-Content-Type-Options": "nosniff"
+    });
+    res.send(Buffer.from(match[2].replace(/\s/g, ""), "base64"));
+  } catch (err) {
+    serverError("GET PHOTO ERROR:", err);
+  }
+};
+
+// ------------------------------------------------------------
+// NOTIFICATIONS  (the bell in the header)
+//   - requests: people who asked ME to connect (still pending)
+//   - accepted: people who accepted a request I sent (until I open the bell)
+// ------------------------------------------------------------
+const ACCEPTED_WINDOW_DAYS = 14;
+
+// GET /api/teammates/notifications
+exports.notifications = async (req, res) => {
+  try {
+    const me = uid(req);
+    const since = new Date(Date.now() - ACCEPTED_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+
+    const [pending, accepted] = await Promise.all([
+      Connection.find({ recipientId: me, status: "pending" }).lean(),
+      Connection.find({ requesterId: me, status: "accepted" }).lean()
+    ]);
+    const recentAccepted = accepted.filter((a) => !a.updatedAt || new Date(a.updatedAt) >= since);
+
+    const ids = [...pending.map((r) => r.requesterId), ...recentAccepted.map((a) => a.recipientId)].filter(
+      mongoose.isValidObjectId
+    );
+    const cards = ids.length ? await buildCards(req, { ids }) : [];
+    const cardBy = new Map(cards.map((c) => [c.id, c]));
+
+    const requests = pending
+      .filter((r) => cardBy.has(r.requesterId))
+      .map((r) => ({ id: String(r._id), createdAt: r.createdAt, from: publicCard(cardBy.get(r.requesterId)) }))
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const acceptedList = recentAccepted
+      .filter((a) => cardBy.has(a.recipientId))
+      .map((a) => ({
+        id: String(a._id),
+        createdAt: a.updatedAt || a.createdAt,
+        unseen: a.responseSeen === false,
+        user: publicCard(cardBy.get(a.recipientId))
+      }))
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    res.json({
+      unread: requests.length + acceptedList.filter((a) => a.unseen).length,
+      requests,
+      accepted: acceptedList
+    });
+  } catch (err) {
+    serverError("NOTIFICATIONS ERROR:", err);
+  }
+};
+
+// POST /api/teammates/notifications/seen
+// Called when the bell is opened: clears the "accepted" part of the badge.
+// (Pending requests keep counting until the person accepts or declines them.)
+exports.markNotificationsSeen = async (req, res) => {
+  try {
+    await Connection.updateMany(
+      { requesterId: uid(req), status: "accepted", responseSeen: false },
+      { $set: { responseSeen: true } }
+    );
+    res.json({ message: "ok" });
+  } catch (err) {
+    serverError("MARK SEEN ERROR:", err);
   }
 };

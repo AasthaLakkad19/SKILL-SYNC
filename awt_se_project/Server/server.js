@@ -64,7 +64,6 @@ const authRoutes = require("./Routes/authRoutes");
 const walletRoutes = require("./Routes/walletRoutes");
 const profileRoutes = require("./Routes/profileRoutes");
 const settingsRoutes = require("./Routes/settingsRoutes");
-const learnRoutes = require("./Routes/learnRoutes");
 const projectRoutes = require("./Routes/projectRoutes");
 const teammateRoutes = require("./Routes/teammateRoutes");
 const teachRoutes = require("./Routes/teachRoutes");
@@ -73,7 +72,6 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/wallet", walletRoutes);
 
 // Learn Skills (catalog, enroll, progress, saved, reviews)
-app.use("/api/learn", learnRoutes);
 
 // Projects (CRUD, milestones, team, collaborators, invites)
 app.use("/api/projects", projectRoutes);

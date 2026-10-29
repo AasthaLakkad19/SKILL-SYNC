@@ -2,7 +2,7 @@
 <html lang="en" ng-app="skillSyncApp">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Find Teammate | SkillSync</title>
 
     <!-- Google Fonts -->
@@ -156,16 +156,30 @@
               ng-repeat="t in filtered = (teammates | filter:matchesFilters) track by t.id"
             >
               <div class="tm-card-top">
-                <div class="tm-avatar">{{ t.name.charAt(0) }}</div>
+                <!-- profile picture if they uploaded one, otherwise their first letter -->
+                <div class="tm-avatar">
+                  <img
+                    ng-if="t.photoUrl && !t.photoFailed"
+                    auth-src="{{ t.photoUrl }}"
+                    auth-src-error="t.photoFailed = true"
+                    alt="Photo of {{ t.name }}"
+                    loading="lazy"
+                  />
+                  <span ng-if="!t.photoUrl || t.photoFailed" aria-hidden="true"
+                    >{{ t.name.charAt(0).toUpperCase() }}</span
+                  >
+                </div>
                 <span class="tm-availability" ng-class="t.availability">
                   <span class="tm-status-dot"></span>
-                  {{ t.availability === 'available' ? 'Available' : 'Busy' }}
+                  {{ t.availability === 'available' ? 'Available' : (t.availability === 'offline' ? 'Offline' : 'Busy') }}
                 </span>
               </div>
 
               <h3>{{ t.name }}</h3>
-              <p class="tm-education">{{ t.education }}</p>
-              <p class="tm-description">{{ t.description }}</p>
+              <p class="tm-education" ng-if="t.education">{{ t.education }}</p>
+              <p class="tm-description" ng-class="{'tm-empty': !t.description}">
+                {{ t.description || 'No description added yet.' }}
+              </p>
 
               <div class="tm-skills">
                 <span ng-repeat="s in t.skills">{{ s }}</span>
@@ -206,23 +220,7 @@
             <p>Try changing your search or selecting different filters.</p>
           </div>
         </section>
-        <div
-          ng-if="notice"
-          role="status"
-          style="
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1f2937;
-            color: #fff;
-            padding: 10px 18px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            z-index: 1000;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-          "
-        >
+        <div class="ss-toast" ng-if="notice" role="status">
           {{ notice }}
         </div>
       </main>

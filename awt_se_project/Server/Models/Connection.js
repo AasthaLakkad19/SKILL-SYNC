@@ -17,7 +17,11 @@ const connectionSchema = new mongoose.Schema(
     },
 
     // Used for the re-request cooldown after a decline
-    declinedAt: { type: Date, default: null }
+    declinedAt: { type: Date, default: null },
+
+    // false = the requester has not yet seen that their request was accepted
+    // (drives the "X accepted your request" notification + bell badge)
+    responseSeen: { type: Boolean, default: true }
   },
   { timestamps: true }
 );
