@@ -978,3 +978,120 @@
     transition: none;
   }
 }
+
+/* ---------- Taught by students ---------- */
+.learn-page .session-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.learn-page .session-teacher {
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+.learn-page .session-teacher strong {
+  color: var(--primary);
+}
+.learn-page .session-desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.learn-page .live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fdecec;
+  color: #c53b40;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.learn-page .live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e5484d;
+  animation: livePulse 1.4s ease-in-out infinite;
+}
+@keyframes livePulse {
+  50% { opacity: 0.3; }
+}
+.learn-page .empty-state a.outline-btn {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+/* the global `header {}` style (white bar, shadow, sticky) must not apply to card headers */
+.learn-page .catalog-card > header {
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  position: static;
+}
+
+
+/* ---------- Learn page: real sessions ---------- */
+.learn-page .learn-alert {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #fdecec;
+  color: #c53b40;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.learn-page .joined-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #e8f7ef;
+  color: #287e58;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.learn-page .price-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.learn-page .price-box strong {
+  color: var(--primary);
+  font-size: 0.95rem;
+}
+.learn-page .price-box strong.price-low {
+  color: #c53b40;
+}
+.learn-page .price-box small {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+.learn-page .session-card .hint.low {
+  display: block;
+  margin-top: 10px;
+  color: #c53b40;
+  font-size: 0.78rem;
+}
+.learn-page .learning-meta {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.learn-page .learning-item .learning-actions {
+  align-items: center;
+}
+
+/* never let a flex column squash a card's text (clipped the description when a hint line was added) */
+.learn-page .session-card > * {
+  flex-shrink: 0;
+}
+.learn-page .session-card .catalog-actions {
+  margin-top: auto;
+}

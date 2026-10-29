@@ -170,23 +170,27 @@
               <span aria-hidden="true">🎓</span> Earn Tokens
             </h2>
             <p class="panel-desc">
-              Teach skills and complete tasks to earn more ST.
+              Every learner who joins one of your sessions pays you its price in ST.
             </p>
 
-            <div class="task-list">
-              <div class="task-card" ng-repeat="task in earnTasks">
-                <div
-                  class="task-icon"
-                  aria-hidden="true"
-                  ng-bind="task.icon"
-                ></div>
+            <div class="task-list" ng-if="openSessions.length">
+              <div class="task-card" ng-repeat="s in openSessions | limitTo:4 track by s.id">
+                <div class="task-icon" aria-hidden="true" ng-bind="modeIcon(s.mode)"></div>
                 <div class="task-body">
-                  <div class="task-title" ng-bind="task.title"></div>
-                  <div class="task-desc" ng-bind="task.description"></div>
+                  <div class="task-title" ng-bind="s.title"></div>
+                  <div class="task-desc">
+                    {{ s.mode }} · {{ s.duration }} · {{ s.participantCount }}
+                    {{ s.participantCount === 1 ? 'learner' : 'learners' }}
+                  </div>
                 </div>
-                <div class="task-reward">+{{ task.reward }} ST</div>
+                <div class="task-reward">{{ s.reward }} ST / learner</div>
               </div>
             </div>
+
+            <p class="panel-empty" ng-if="earnLoaded && !openSessions.length">
+              You have no open teaching sessions. Publish one on Teach Skills
+              to start earning tokens.
+            </p>
 
             <a href="teachSkills.html" class="panel-btn">
               Go to Teach Skills →
@@ -199,23 +203,23 @@
               <span aria-hidden="true">📚</span> Spend Tokens
             </h2>
             <p class="panel-desc">
-              Use your tokens to unlock learning sessions.
+              Use your tokens to learn skills from fellow students.
             </p>
 
-            <div class="task-list">
-              <div class="task-card" ng-repeat="item in spendOptions">
-                <div
-                  class="task-icon"
-                  aria-hidden="true"
-                  ng-bind="item.icon"
-                ></div>
+            <div class="task-list" ng-if="learnOptions.length">
+              <div class="task-card" ng-repeat="item in learnOptions track by item.id">
+                <div class="task-icon" aria-hidden="true" ng-bind="modeIcon(item.mode)"></div>
                 <div class="task-body">
                   <div class="task-title" ng-bind="item.title"></div>
-                  <div class="task-desc" ng-bind="item.description"></div>
+                  <div class="task-desc">by {{ item.teacher || 'a student' }} · {{ item.level }} · {{ item.duration }}</div>
                 </div>
-                <div class="task-cost">{{ item.cost }} ST</div>
+                <div class="task-cost">{{ item.reward }} ST</div>
               </div>
             </div>
+
+            <p class="panel-empty" ng-if="spendLoaded && !learnOptions.length">
+              No student sessions are available to join right now.
+            </p>
 
             <a href="learnSkills.html" class="panel-btn">
               Go to Learn Skills →

@@ -1,4 +1,4 @@
-app.controller("WalletController", function ($scope, $http) {
+app.controller("WalletController", function ($scope, $http, $interval) {
   // ============================================================
   // USER
   // ============================================================
@@ -92,98 +92,93 @@ app.controller("WalletController", function ($scope, $http) {
   };
 
   // ============================================================
-  // SPEND TOKENS
+  // EARN  -> my own published (open) teaching sessions. Every learner who
+  //          joins one pays me its price right away. Real data only.
   // ============================================================
-  $scope.spendTokens = function (amount, title, category) {
+
+  $scope.openSessions = [];
+
+  $scope.earnLoaded = false;
+
+  $scope.loadOpenSessions = function () {
     $http
-      .post("/api/wallet/spend", {
-        amount: Number(amount),
-        title: title,
-        category: category,
-      })
+      .get("/api/teach/sessions")
 
       .then(function (response) {
-        if (response.data.success) {
-          // Reload latest wallet from database
-          $scope.loadWallet();
-        }
+        $scope.openSessions = (response.data.sessions || []).filter(function (s) {
+          return s.status === "published";
+        });
       })
 
       .catch(function (error) {
-        alert((error.data && error.data.message) || "Failed to spend tokens");
+        console.error("Failed to load teaching sessions:", error);
+      })
+
+      .finally(function () {
+        $scope.earnLoaded = true;
       });
   };
-  // ============================================================
-  // EARN TASKS
-  // ============================================================
 
-  $scope.earnTasks = [
-    {
-      icon: "🎓",
-      title: "Teach a skill",
-      description: "Host a 1-hour session",
-      reward: 4,
-    },
-
-    {
-      icon: "🔥",
-      title: "7-day teaching streak",
-      description: "Teach every day for a week",
-      reward: 5,
-    },
-
-    {
-      icon: "👥",
-      title: "Help 5 students",
-      description: "Complete mentoring sessions",
-      reward: 6,
-    },
-
-    {
-      icon: "📄",
-      title: "Share a resource",
-      description: "Upload notes or a template",
-      reward: 1,
-    },
-  ];
+  $scope.modeIcon = function (mode) {
+    return {
+      "Live online": "📡",
+      "In person on campus": "📍",
+      "Recorded mini lesson": "🎬",
+      "Pair programming": "👩‍💻",
+      "Quiz / practice session": "🧠"
+    }[mode] || "🎓";
+  };
 
   // ============================================================
-  // SPEND OPTIONS
+  // SPEND  -> real sessions other students are teaching, cheapest first,
+  //           with the token price you would pay to join
   // ============================================================
 
-  $scope.spendOptions = [
-    {
-      icon: "📚",
-      title: "Beginner skill session",
-      description: "1-hour guided learning",
-      cost: 2,
-    },
+  $scope.learnOptions = [];
 
-    {
-      icon: "🚀",
-      title: "Intermediate workshop",
-      description: "Deep-dive session",
-      cost: 3,
-    },
+  $scope.spendLoaded = false;
 
-    {
-      icon: "⭐",
-      title: "Premium skill track",
-      description: "Full multi-day course",
-      cost: 8,
-    },
+  $scope.loadLearnOptions = function () {
+    $http
+      .get("/api/teach/discover", { params: { limit: 60 } })
 
-    {
-      icon: "🎯",
-      title: "1-on-1 mentoring",
-      description: "Personal coaching call",
-      cost: 5,
-    },
-  ];
+      .then(function (response) {
+        $scope.learnOptions = (response.data.sessions || [])
+          .sort(function (a, b) { return a.reward - b.reward; })
+          .slice(0, 4);
+      })
+
+      .catch(function (error) {
+        console.error("Failed to load sessions:", error);
+      })
+
+      .finally(function () {
+        $scope.spendLoaded = true;
+      });
+  };
 
   // ============================================================
   // INITIALIZE
   // ============================================================
 
   $scope.loadWallet();
+
+  $scope.loadOpenSessions();
+
+  $scope.loadLearnOptions();
+
+  // Tokens can change while this page is open (a learner joins my session, or the
+  // header refreshed the balance): reload the numbers + history.
+  $scope.$on("wallet:changed", function () {
+    $scope.loadWallet();
+    $scope.loadOpenSessions();
+  });
+
+  var refresh = $interval(function () {
+    if (!document.hidden) $scope.loadWallet();
+  }, 30 * 1000);
+
+  $scope.$on("$destroy", function () {
+    $interval.cancel(refresh);
+  });
 });

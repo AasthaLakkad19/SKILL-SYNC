@@ -55,6 +55,46 @@ async function awardTokens(userId, amount, title, category) {
   );
 }
 
+// Takes tokens out of a wallet. Atomic: only succeeds while balance >= amount,
+// so a balance can never go below 0 (even with two requests at once).
+// Returns { wallet, txId } or null when the balance is too low.
+async function chargeTokens(userId, amount, title, category) {
+  const tokens = Number(amount);
+  if (!Number.isFinite(tokens) || tokens <= 0) throw new Error("Invalid token amount");
+
+  userId = String(userId);
+  await ensureWallet(userId);
+
+  const wallet = await Wallet.findOneAndUpdate(
+    { userId, balance: { $gte: tokens } },
+    {
+      $inc: { balance: -tokens, totalSpent: tokens },
+      $push: {
+        transactions: {
+          type: "spend",
+          title: title || "Learning Session",
+          category: category || "Learning",
+          amount: tokens,
+          date: formatDate(new Date())
+        }
+      }
+    },
+    { new: true }
+  );
+  if (!wallet) return null;
+
+  const last = wallet.transactions[wallet.transactions.length - 1];
+  return { wallet, txId: last ? last._id : null };
+}
+
+// Exactly reverses chargeTokens (balance, totalSpent and the history row).
+// Used when the other half of a payment fails, so nobody loses tokens.
+async function refundCharge(userId, amount, txId) {
+  const update = { $inc: { balance: amount, totalSpent: -amount } };
+  if (txId) update.$pull = { transactions: { _id: txId } };
+  return Wallet.findOneAndUpdate({ userId: String(userId) }, update, { new: true });
+}
+
 // GET /api/wallet   (logged-in user's wallet)
 exports.getWallet = async (req, res) => {
   try {
@@ -128,3 +168,6 @@ exports.getTransactions = async (req, res) => {
 };
 
 exports.awardTokens = awardTokens;
+exports.chargeTokens = chargeTokens;
+exports.refundCharge = refundCharge;
+exports.ensureWallet = ensureWallet;

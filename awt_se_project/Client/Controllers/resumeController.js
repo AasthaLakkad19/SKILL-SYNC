@@ -307,9 +307,43 @@ app.controller("ResumeController", function ($scope, $http, $timeout) {
     const reader = new FileReader();
 
     reader.onload = function (e) {
-      $scope.$apply(function () {
-        $scope.resume.personalInfo.photo = e.target.result;
-      });
+      var original = e.target.result;
+
+      function useOriginal() {
+        $scope.$apply(function () {
+          $scope.resume.personalInfo.photo = original;
+        });
+      }
+
+      // Shrink to max 600px JPEG first. A phone photo can be several MB, and the
+      // picture is sent with every profile / teammate card that shows it.
+      var img = new Image();
+      img.onload = function () {
+        try {
+          var MAX = 600;
+          var scale = Math.min(1, MAX / Math.max(img.width, img.height));
+          var w = Math.max(1, Math.round(img.width * scale));
+          var h = Math.max(1, Math.round(img.height * scale));
+
+          var canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+
+          var ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#ffffff"; // PNG transparency -> white instead of black
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+
+          var small = canvas.toDataURL("image/jpeg", 0.85);
+          $scope.$apply(function () {
+            $scope.resume.personalInfo.photo = small;
+          });
+        } catch (err) {
+          useOriginal();
+        }
+      };
+      img.onerror = useOriginal;
+      img.src = original;
     };
 
     reader.readAsDataURL(file);
