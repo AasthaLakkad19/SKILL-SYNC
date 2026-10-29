@@ -151,6 +151,15 @@ teachSessionSchema.statics.addParticipant = async function (sessionId, userId) {
     return result.modifiedCount === 1;
 };
 
+// Undo addParticipant (used when paying to join fails half way)
+teachSessionSchema.statics.removeParticipant = async function (sessionId, userId) {
+    const result = await this.updateOne(
+        { _id: sessionId, "participants.user": userId },
+        { $pull: { participants: { user: userId } }, $inc: { participantCount: -1 } }
+    );
+    return result.modifiedCount === 1;
+};
+
 const TeachSession = mongoose.model("TeachSession", teachSessionSchema);
 
 TeachSession.OPTIONS = { CATEGORIES, LEVELS, MODES, DURATIONS, ACTIVITIES, REWARDS };

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const TeachSession = require("../Models/TeachSession");
 const QuizAttempt = require("../Models/QuizAttempt");
-const { awardTokens } = require("./walletController");
+const wallets = require("./walletController");
 const { recordActivity } = require("../utils/achievementUtils");
 const live = require("./teachLiveController");
 const uploads = require("../utils/teachUploads");
@@ -15,10 +15,14 @@ const { CATEGORIES, LEVELS, MODES, DURATIONS, ACTIVITIES, REWARDS } =
 
 const getUserId = (req) => req.user && (req.user._id || req.user.id);
 
-// A teacher can only complete (and earn tokens for) a session once at least one
-// OTHER student actually took part: watched, joined, took the quiz or attended
-// the live class. Set TEACH_REQUIRE_LEARNER=false in .env to turn this off
-// (handy for demos with a single account).
+// A teacher can only complete a session once at least one OTHER student joined
+// it. Set TEACH_REQUIRE_LEARNER=false in .env to turn this off (handy for demos
+// with a single account).
+//
+// TOKEN RULES
+//   - A learner pays the session's price (its "reward": 2, 3 or 5 tokens) ONCE,
+//     when they join. The same tokens go straight to the teacher's wallet.
+//   - Content (video, links, quiz, live room) is only given to people who joined.
 const REQUIRE_LEARNER = process.env.TEACH_REQUIRE_LEARNER !== "false";
 
 const FIELDS = [
@@ -211,6 +215,15 @@ function serialize(doc, { owner = false } = {}) {
     return j;
 }
 
+// What a learner sees BEFORE joining: no links, video, location or quiz questions.
+// (The server hides these, so skipping the payment step isn't possible.)
+function lockDetails(j) {
+    const quizCount = j.details && j.details.quizCount ? j.details.quizCount : 0;
+    j.details = quizCount ? { quizCount } : {};
+    j.locked = true;
+    return j;
+}
+
 const isOwnerOf = (doc, req) => {
     const ownerId = doc.user && doc.user._id ? doc.user._id : doc.user;
     return String(ownerId) === String(getUserId(req));
@@ -368,6 +381,15 @@ exports.updateSession = async (req, res) => {
 exports.deleteSession = async (req, res) => {
     try {
         if (!validId(res, req.params.id)) return;
+
+        // Learners already paid to join, so the session can't just disappear on them
+        const existing = await TeachSession.findOne({ _id: req.params.id, user: getUserId(req) });
+        if (existing && existing.participantCount > 0) {
+            return res.status(409).json({
+                message: "Learners have already joined this session, so it can't be deleted. Complete it instead."
+            });
+        }
+
         const deleted = await TeachSession.findOneAndDelete({
             _id: req.params.id,
             user: getUserId(req)
@@ -384,7 +406,9 @@ exports.deleteSession = async (req, res) => {
     }
 };
 
-// PATCH /api/teach/sessions/:id/complete  -> awards the session's tokens once
+// PATCH /api/teach/sessions/:id/complete  -> closes the session.
+// No tokens are created here: the teacher was already paid by each learner at
+// the moment they joined (see joinSession), so completing can't pay twice.
 exports.completeSession = async (req, res) => {
     try {
         const session = await findOwned(req);
@@ -394,20 +418,19 @@ exports.completeSession = async (req, res) => {
         }
         if (REQUIRE_LEARNER && !(session.participantCount > 0)) {
             return res.status(409).json({
-                message: "Tokens are awarded once a student has taken part. Share your session and come back after someone joins."
+                message: "You can complete a session once a student has joined. Share your session and come back after someone joins."
             });
         }
 
         const userId = getUserId(req);
 
-        // Claim the completion atomically so two quick clicks can't pay twice
+        // Claim the completion atomically so two quick clicks can't run twice
         const claimed = await TeachSession.findOneAndUpdate(
             { _id: session._id, user: userId, status: "published" },
             {
                 $set: {
                     status: "completed",
                     completedAt: new Date(),
-                    tokensAwarded: session.reward,
                     "live.isLive": false,
                     "live.endedAt": new Date()
                 }
@@ -417,25 +440,15 @@ exports.completeSession = async (req, res) => {
         if (!claimed) return res.status(409).json({ message: "Session already completed" });
         live._rooms.delete(String(claimed._id));
 
-        let wallet;
-        try {
-            wallet = await awardTokens(userId, claimed.reward, `Taught: ${claimed.title}`, "Teaching");
-        } catch (err) {
-            // Couldn't pay -> undo, so the teacher can simply try again
-            await TeachSession.updateOne(
-                { _id: claimed._id },
-                { $set: { status: "published", completedAt: null, tokensAwarded: 0 } }
-            );
-            return serverError(res, "completeSession (wallet):", "Couldn't add the tokens to your wallet. Please try again.", err);
-        }
-
         // Teaching achievements are a bonus: never fail the request because of them
         recordActivity(userId, "Teaching", 1).catch((err) => console.warn("achievement update skipped:", err.message));
 
+        const earned = claimed.tokensAwarded || 0;
         res.json({
-            message: `Session completed. You earned ${claimed.reward} Skill Tokens!`,
-            session: serialize(claimed, { owner: true }),
-            balance: wallet ? wallet.balance : undefined
+            message: earned
+                ? `Session completed. You earned ${earned} Skill Tokens from ${claimed.participantCount} learner${claimed.participantCount === 1 ? "" : "s"}.`
+                : "Session completed.",
+            session: serialize(claimed, { owner: true })
         });
     } catch (err) {
         serverError(res, "completeSession:", "Failed to complete session", err);
@@ -465,7 +478,7 @@ exports.discover = async (req, res) => {
             .limit(limit)
             .populate("user", "name");
 
-        res.json({ count: sessions.length, sessions: sessions.map((s) => serialize(s)) });
+        res.json({ count: sessions.length, sessions: sessions.map((s) => lockDetails(serialize(s))) });
     } catch (err) {
         serverError(res, "discover:", "Failed to load community sessions", err);
     }
@@ -485,6 +498,7 @@ exports.viewSession = async (req, res) => {
         if (!owner) {
             const uid = getUserId(req);
             out.joined = !!(await TeachSession.exists({ _id: session._id, "participants.user": uid }));
+            if (!out.joined) lockDetails(out);
 
             if (session.mode === "Quiz / practice session") {
                 const [best, attempts] = await Promise.all([
@@ -500,20 +514,105 @@ exports.viewSession = async (req, res) => {
     }
 };
 
-// POST /api/teach/view/:id/join   -> "I'm attending" / started watching
+// Learner pays the session price, the teacher receives it. Safe to call twice:
+// only the call that actually adds the learner can charge, and every failure
+// path puts the tokens (and the learner list) back exactly as they were.
+async function payToJoin(session, req) {
+    const learnerId = String(getUserId(req));
+    const teacherId = String(session.user && session.user._id ? session.user._id : session.user);
+    const cost = session.reward || 0;
+
+    // 1) claim the seat (atomic + idempotent). If this returns false the learner
+    //    is already in (double click / second tab) and must NOT be charged again.
+    const added = await TeachSession.addParticipant(session._id, learnerId);
+    if (!added) return { status: "already" };
+
+    const undoSeat = () => TeachSession.removeParticipant(session._id, learnerId);
+
+    // 2) take the tokens from the learner (atomic: balance can't go below 0)
+    let charge;
+    try {
+        charge = await wallets.chargeTokens(learnerId, cost, `Joined: ${session.title}`, "Learning");
+    } catch (err) {
+        await undoSeat();
+        throw err;
+    }
+    if (!charge) {
+        await undoSeat();
+        return { status: "insufficient", cost };
+    }
+
+    // 3) give the same tokens to the teacher. If that fails, give the learner their tokens back.
+    const learnerName = (req.user && req.user.name) || "A learner";
+    try {
+        await wallets.awardTokens(teacherId, cost, `${learnerName} joined: ${session.title}`, "Teaching");
+    } catch (err) {
+        await wallets.refundCharge(learnerId, cost, charge.txId).catch((e) => console.error("REFUND FAILED:", learnerId, cost, e));
+        await undoSeat();
+        throw err;
+    }
+
+    // 4) bookkeeping for the teacher's "tokens earned" numbers (not critical)
+    await TeachSession.updateOne({ _id: session._id }, { $inc: { tokensAwarded: cost } })
+        .catch((e) => console.warn("tokensAwarded not updated:", e.message));
+
+    return { status: "paid", cost, balance: charge.wallet.balance };
+}
+
+// POST /api/teach/view/:id/join   -> join the session (pays its price)
 exports.joinSession = async (req, res) => {
     try {
         if (!validId(res, req.params.id)) return;
-        const session = await TeachSession.findById(req.params.id).select("user status participantCount");
+        const session = await TeachSession.findById(req.params.id);
         if (!session) return res.status(404).json({ message: "Session not found" });
         if (isOwnerOf(session, req)) return res.status(400).json({ message: "This is your own session" });
-        if (session.status === "completed") return res.status(409).json({ message: "This session is already completed" });
 
-        await TeachSession.addParticipant(session._id, getUserId(req));
+        const learnerId = getUserId(req);
+        const alreadyIn = await TeachSession.exists({ _id: session._id, "participants.user": learnerId });
+        if (!alreadyIn && session.status === "completed") {
+            return res.status(409).json({ message: "This session is already completed" });
+        }
+
+        const result = alreadyIn ? { status: "already" } : await payToJoin(session, req);
+
+        if (result.status === "insufficient") {
+            return res.status(402).json({
+                message: `You need ${result.cost} Skill Tokens to join this session. Teach a skill to earn more.`,
+                insufficient: true,
+                needed: result.cost
+            });
+        }
+
         const fresh = await TeachSession.findById(session._id).select("participantCount");
-        res.json({ joined: true, participantCount: fresh.participantCount });
+        res.json({
+            joined: true,
+            charged: result.status === "paid" ? result.cost : 0,
+            balance: result.balance,
+            participantCount: fresh ? fresh.participantCount : undefined
+        });
     } catch (err) {
-        serverError(res, "joinSession:", "Could not join the session", err);
+        serverError(res, "joinSession:", "Could not join the session. You have not been charged.", err);
+    }
+};
+
+// GET /api/teach/joined   -> sessions I joined (the learner's "My learning")
+exports.joinedSessions = async (req, res) => {
+    try {
+        const sessions = await TeachSession.find({ "participants.user": getUserId(req) })
+            .sort({ updatedAt: -1 })
+            .limit(100)
+            .populate("user", "name");
+
+        res.json({
+            count: sessions.length,
+            sessions: sessions.map((s) => {
+                const j = lockDetails(serialize(s));
+                j.joined = true;
+                return j;
+            })
+        });
+    } catch (err) {
+        serverError(res, "joinedSessions:", "Failed to load your sessions", err);
     }
 };
 
@@ -526,6 +625,14 @@ exports.submitQuiz = async (req, res) => {
         const quiz = session && session.details && session.details.quiz;
         if (!session || session.mode !== "Quiz / practice session" || !quiz || !quiz.length) {
             return res.status(404).json({ message: "Quiz not found" });
+        }
+
+        // Learners must have joined (paid) before answering; the teacher may preview
+        if (!isOwnerOf(session, req)) {
+            const joined = await TeachSession.exists({ _id: session._id, "participants.user": getUserId(req) });
+            if (!joined) {
+                return res.status(403).json({ message: "Join this session first to take the quiz.", needsJoin: true });
+            }
         }
 
         const answers = req.body && req.body.answers;
@@ -556,7 +663,6 @@ exports.submitQuiz = async (req, res) => {
                 total,
                 answers: results.map((r) => (r.chosen === null ? -1 : r.chosen))
             });
-            await TeachSession.addParticipant(session._id, getUserId(req));
         }
 
         res.json({ score, total, percent: Math.round((score / total) * 100), results, saved: !owner });

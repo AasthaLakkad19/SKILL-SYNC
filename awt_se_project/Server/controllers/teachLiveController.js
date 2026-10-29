@@ -192,6 +192,12 @@ exports.joinLive = async (req, res) => {
         if (String(session.user) === uid) {
             return res.status(400).json({ message: "You are the teacher. Use Go live instead." });
         }
+        // Learners pay when they join the session (POST /view/:id/join), before the room opens
+        const joined = await TeachSession.exists({ _id: session._id, "participants.user": uid });
+        if (!joined) {
+            return res.status(403).json({ message: "Join this session first to enter the live class.", needsJoin: true });
+        }
+
         const room = rooms.get(String(session._id));
         if (!room || !session.live || !session.live.isLive) {
             return res.status(409).json({ message: "This class isn't live right now" });
@@ -208,8 +214,6 @@ exports.joinLive = async (req, res) => {
 
         const peerId = crypto.randomBytes(6).toString("hex");
         room.peers.set(peerId, { userId: uid, name: req.user.name || "Learner", lastSeen: Date.now() });
-
-        await TeachSession.addParticipant(session._id, req.user._id);
 
         res.json({ peerId, iceServers: iceServers(), hostPeerId: HOST });
     } catch (err) {

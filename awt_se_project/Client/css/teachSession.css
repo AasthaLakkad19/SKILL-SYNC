@@ -1,0 +1,14 @@
+
+
+/* "Join for N tokens" gate */
+.dashboard .join-panel .btn-primary {
+  margin-top: 6px;
+}
+.dashboard .join-panel .join-error {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fdecec;
+  color: #c53b40;
+  font-weight: 600;
+}

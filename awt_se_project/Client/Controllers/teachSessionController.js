@@ -16,8 +16,8 @@
   });
 
   app.controller("TeachSessionController", [
-    "$scope", "$http", "$interval", "$timeout", "$window",
-    function ($scope, $http, $interval, $timeout, $window) {
+    "$scope", "$rootScope", "$http", "$interval", "$timeout", "$window",
+    function ($scope, $rootScope, $http, $interval, $timeout, $window) {
       var API = "/api/teach";
       var HOST = "host";
       var sessionId = new URLSearchParams($window.location.search).get("id");
@@ -135,15 +135,32 @@
         $scope.s.joined = true; // optimistic, the call is idempotent
         $http.post(API + "/view/" + $scope.s.id + "/join").catch(function () { $scope.s.joined = false; });
       }
+      // Locked content is only sent by the server after the learner joined (and paid)
+      $scope.canSee = function () {
+        return !!($scope.isOwner || ($scope.s && $scope.s.joined));
+      };
+
+      $scope.joinError = "";
+
       $scope.joinSession = function () {
+        if ($scope.busy) return;
         $scope.busy = true;
+        $scope.joinError = "";
         $http.post(API + "/view/" + $scope.s.id + "/join")
           .then(function (r) {
-            $scope.s.joined = true;
-            $scope.s.participantCount = r.data.participantCount;
-            toast("You're in! The teacher can see that you joined.");
+            toast(r.data.charged
+              ? "You're in! " + r.data.charged + " tokens went to the teacher."
+              : "You're in!");
+            $rootScope.$broadcast("wallet:changed"); // header + wallet page refresh the balance
+            // reload so the unlocked content (video, quiz, links...) arrives
+            return $http.get(API + "/view/" + encodeURIComponent($scope.s.id)).then(function (v) {
+              applySession(v.data.session);
+            });
           })
-          .catch(function (err) { if (!isUnauthorized(err)) toast(errText(err, "Couldn't join.")); })
+          .catch(function (err) {
+            if (isUnauthorized(err)) return;
+            $scope.joinError = errText(err, "Couldn't join. You have not been charged.");
+          })
           .finally(function () { $scope.busy = false; });
       };
       $scope.onVideoPlay = markJoined;

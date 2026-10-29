@@ -26,12 +26,85 @@
 
 <!-- Header Right -->
 <div class="header-right">
-  <button class="header-icon" aria-label="Notifications">🔔</button>
+  <!-- Notifications: connection requests + "accepted" updates -->
+  <div class="notif-wrap">
+    <button
+      class="header-icon notif-btn"
+      type="button"
+      aria-label="Notifications{{ notif.unread ? ' (' + notif.unread + ' new)' : '' }}"
+      aria-haspopup="true"
+      aria-expanded="{{ notif.open }}"
+      ng-click="toggleNotifications($event)"
+    >
+      <span aria-hidden="true">🔔</span>
+      <span class="notif-badge" ng-if="notif.unread > 0" aria-hidden="true">{{ notif.unread > 9 ? '9+' : notif.unread }}</span>
+    </button>
+
+    <div class="notif-panel" ng-if="notif.open" role="dialog" aria-label="Notifications">
+      <div class="notif-head">
+        <strong>Notifications</strong>
+        <span class="notif-pill" ng-if="notif.requests.length">{{ notif.requests.length }} pending</span>
+        <button class="notif-close" type="button" aria-label="Close notifications" ng-click="closeNotifications()">✕</button>
+      </div>
+
+      <div class="notif-body">
+        <p class="notif-message" role="status" ng-if="notif.message">{{ notif.message }}</p>
+        <p class="notif-error" role="alert" ng-if="notif.error">{{ notif.error }}</p>
+        <p class="notif-state" ng-if="notif.loading && !notif.loaded">Loading…</p>
+
+        <div class="notif-empty" ng-if="notif.loaded && !notif.requests.length && !notif.accepted.length && !notif.error">
+          <span aria-hidden="true">🔔</span>
+          <strong>You're all caught up</strong>
+          <p>When someone sends you a connection request, it will show up here.</p>
+        </div>
+
+        <!-- Requests sent TO me -->
+        <h4 class="notif-section" ng-if="notif.requests.length">Connection requests</h4>
+        <div class="notif-item" ng-repeat="n in notif.requests track by n.id">
+          <a class="notif-avatar" ng-href="profile.html?userId={{ n.from.id }}" aria-label="View {{ n.from.name }}'s profile">
+            <img ng-if="n.from.photoUrl && !n.from.photoFailed" auth-src="{{ n.from.photoUrl }}" auth-src-error="n.from.photoFailed = true" alt="" />
+            <span ng-if="!n.from.photoUrl || n.from.photoFailed">{{ n.from.name.charAt(0).toUpperCase() }}</span>
+          </a>
+          <div class="notif-content">
+            <p class="notif-text">
+              <a class="notif-name" ng-href="profile.html?userId={{ n.from.id }}">{{ n.from.name }}</a>
+              wants to connect with you
+            </p>
+            <span class="notif-meta">
+              <span ng-if="n.from.education">{{ n.from.education }} · </span>{{ timeAgo(n.createdAt) }}
+            </span>
+            <div class="notif-actions">
+              <button type="button" class="notif-accept" ng-click="acceptRequest(n)" ng-disabled="notif.busy === n.id">Accept</button>
+              <button type="button" class="notif-decline" ng-click="declineRequest(n)" ng-disabled="notif.busy === n.id">Decline</button>
+              <a class="notif-view" ng-href="profile.html?userId={{ n.from.id }}">View profile</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- People who accepted MY requests -->
+        <h4 class="notif-section" ng-if="notif.accepted.length">Recent</h4>
+        <div class="notif-item notif-accepted" ng-repeat="a in notif.accepted track by a.id">
+          <a class="notif-avatar" ng-href="profile.html?userId={{ a.user.id }}" aria-label="View {{ a.user.name }}'s profile">
+            <img ng-if="a.user.photoUrl && !a.user.photoFailed" auth-src="{{ a.user.photoUrl }}" auth-src-error="a.user.photoFailed = true" alt="" />
+            <span ng-if="!a.user.photoUrl || a.user.photoFailed">{{ a.user.name.charAt(0).toUpperCase() }}</span>
+          </a>
+          <div class="notif-content">
+            <p class="notif-text">
+              <a class="notif-name" ng-href="profile.html?userId={{ a.user.id }}">{{ a.user.name }}</a>
+              accepted your connection request
+            </p>
+            <span class="notif-meta">{{ timeAgo(a.createdAt) }}</span>
+          </div>
+          <span class="notif-dot" ng-if="a.unseen" title="New"></span>
+        </div>
+      </div>
+    </div>
+  </div>
   <button class="header-icon" aria-label="Messages">💬</button>
 
   <div class="token-display">
     <span aria-hidden="true">🪙</span>
-    <strong>{{ tokens }}</strong>
+    <strong title="Your Skill Tokens">{{ headerTokens === null ? '–' : headerTokens }}</strong>
   </div>
 
   <div class="profile-menu" ng-click="toggleProfileMenu()">

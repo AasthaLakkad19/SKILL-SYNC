@@ -1019,3 +1019,382 @@
 .dashboard .top-header > div[ng-controller] {
   display: contents; /* makes the wrapper disappear from the box tree */
 }
+
+/* =========================================================
+   SKILLSYNC – PHONE / MOBILE STYLES
+   (max-width: 600px)
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  /* ---------- Base Layout ---------- */
+  .dashboard {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "main";
+  }
+
+  .dashboard .main-content {
+    padding: 16px 14px 32px;
+    gap: 20px;
+    max-width: 100%;
+  }
+
+  /* ---------- Header ---------- */
+  .dashboard .top-header {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+
+  .dashboard .menu-btn {
+    display: flex;
+  }
+
+  .dashboard .search-box {
+    display: none;
+  }
+
+  .dashboard .profile-name,
+  .dashboard .arrow {
+    display: none;
+  }
+
+  .dashboard .header-right {
+    gap: 8px;
+  }
+
+  .dashboard .profile-dropdown {
+    min-width: 180px;
+    right: 0;
+  }
+
+  /* ---------- Sidebar (drawer) ---------- */
+  .dashboard .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 260px;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 300;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
+    border-right: none;
+    padding-top: 24px;
+  }
+
+  .dashboard .sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  .dashboard.sidebar-open::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    z-index: 250;
+  }
+
+  /* ---------- Welcome ---------- */
+  .dashboard .welcome-section h1 {
+    font-size: 1.55rem;
+    line-height: 1.25;
+  }
+
+  .dashboard .welcome-section p {
+    font-size: 0.93rem;
+  }
+
+  .dashboard .welcome-label {
+    font-size: 0.72rem;
+  }
+
+  /* ---------- Token Card ---------- */
+  .dashboard .token-welcome-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 16px;
+  }
+
+  .dashboard .token-icon {
+    font-size: 2rem;
+  }
+
+  .dashboard .token-content h2 {
+    font-size: 1.1rem;
+  }
+
+  .dashboard .token-content p {
+    font-size: 0.88rem;
+  }
+
+  .dashboard .token-welcome-card .primary-btn {
+    width: 100%;
+    text-align: center;
+    padding: 0.8rem 1.2rem;
+  }
+
+  /* ---------- Section Headings ---------- */
+  .dashboard .section-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .dashboard .section-heading h2 {
+    font-size: 1.25rem;
+  }
+
+  .dashboard .section-heading p {
+    font-size: 0.88rem;
+  }
+
+  .dashboard .section-heading > a {
+    font-size: 0.85rem;
+  }
+
+  /* ---------- Action Cards (Get Started) ---------- */
+  .dashboard .action-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .dashboard .action-card {
+    padding: 18px 16px;
+  }
+
+  .dashboard .action-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+  }
+
+  .dashboard .action-card h3 {
+    font-size: 1.05rem;
+  }
+
+  .dashboard .action-card p {
+    font-size: 0.87rem;
+  }
+
+  .dashboard .outline-btn {
+    padding: 0.55rem 1.1rem;
+    font-size: 0.84rem;
+  }
+
+  /* ---------- Profile Completion ---------- */
+  .dashboard .profile-completion {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+    padding: 18px 16px;
+  }
+
+  .dashboard .completion-left,
+  .dashboard .completion-right {
+    min-width: 100%;
+  }
+
+  .dashboard .completion-icon {
+    font-size: 1.6rem;
+  }
+
+  .dashboard .completion-left h2 {
+    font-size: 1.08rem;
+  }
+
+  .dashboard .completion-left p {
+    font-size: 0.87rem;
+  }
+
+  .dashboard .profile-completion .primary-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ---------- Popular Skills ---------- */
+  .dashboard .skills-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .dashboard .skills-grid .skill-card {
+    padding: 12px 14px;
+  }
+
+  .dashboard .skill-logo {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .dashboard .skill-info h3 {
+    font-size: 0.94rem;
+  }
+
+  .dashboard .skill-info span {
+    font-size: 0.76rem;
+  }
+
+  .dashboard .skills-grid .skill-card button {
+    padding: 0.45rem 0.9rem;
+    font-size: 0.78rem;
+  }
+
+  /* ---------- Empty Project ---------- */
+  .dashboard .empty-project {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 16px;
+  }
+
+  .dashboard .empty-icon {
+    font-size: 2rem;
+  }
+
+  .dashboard .empty-project h2 {
+    font-size: 1.08rem;
+  }
+
+  .dashboard .empty-project p {
+    font-size: 0.87rem;
+  }
+
+  .dashboard .empty-project .primary-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ---------- Why SkillSync ---------- */
+  .dashboard .why-skillsync h2 {
+    font-size: 1.3rem;
+    margin-bottom: 18px;
+  }
+
+  .dashboard .why-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .dashboard .why-grid > div {
+    padding: 18px 14px;
+  }
+
+  .dashboard .why-grid span {
+    font-size: 1.6rem;
+  }
+
+  .dashboard .why-grid h3 {
+    font-size: 0.98rem;
+  }
+
+  .dashboard .why-grid p {
+    font-size: 0.85rem;
+  }
+
+  /* =========================================================
+     CHATBOT – Phone adjustments
+     ========================================================= */
+
+  .chatbot-container {
+    right: 16px;
+    bottom: 16px;
+  }
+
+  .chatbot-btn {
+    width: 56px;
+    height: 56px;
+  }
+
+  .chatbot-btn img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .chat-window {
+    width: calc(100vw - 32px);
+    max-width: 360px;
+    height: 70vh;
+    max-height: 520px;
+    bottom: 72px;
+    right: 0;
+    border-radius: 18px;
+  }
+
+  .chat-header {
+    min-height: 64px;
+    padding: 12px 14px;
+  }
+
+  .chat-avatar {
+    width: 38px;
+    height: 38px;
+  }
+
+  .chat-avatar img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .chat-header h4 {
+    font-size: 14px;
+  }
+
+  .chat-header p {
+    font-size: 10px;
+  }
+
+  .chat-body {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .bot-message,
+  .user-message {
+    max-width: 88%;
+    font-size: 13px;
+    padding: 9px 12px;
+  }
+
+  .chat-footer {
+    padding: 10px 12px;
+  }
+
+  .chat-footer input {
+    height: 40px;
+    font-size: 13px;
+    padding: 0 14px;
+  }
+
+  .chat-footer button {
+    width: 40px;
+    height: 40px;
+    font-size: 15px;
+  }
+}
+
+/* Extra small phones (≤ 380px) */
+@media (max-width: 380px) {
+  .dashboard .main-content {
+    padding: 14px 12px 28px;
+  }
+
+  .dashboard .welcome-section h1 {
+    font-size: 1.4rem;
+  }
+
+  .chat-window {
+    width: calc(100vw - 24px);
+    height: 68vh;
+  }
+
+  .chatbot-container {
+    right: 12px;
+    bottom: 12px;
+  }
+}

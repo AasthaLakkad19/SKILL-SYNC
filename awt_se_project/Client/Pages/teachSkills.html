@@ -339,14 +339,14 @@
                   </select>
                 </div>
                 <div class="field">
-                  <label for="tokenReward">Token reward</label
+                  <label for="tokenReward">Price per learner</label
                   ><select id="tokenReward" ng-model="newSession.reward">
                     <option value="2">2 Skill Tokens</option>
                     <option value="3">3 Skill Tokens</option>
                     <option value="5">5 Skill Tokens</option></select
                   ><small
-                    >Added to your wallet when you complete the session after a
-                    student has taken part.</small
+                    >Each learner pays this when they join, and you receive it in your
+                    wallet right away.</small
                   >
                 </div>
                 <div class="full-field format-panel">
@@ -696,7 +696,7 @@
               <div>
                 <b>Knowledge comes full circle</b>
                 <p>
-                  Teach a skill, help a peer, and earn tokens to learn something
+                  Teach a skill, earn tokens from every learner who joins, and spend them to learn something
                   new yourself.
                 </p>
               </div>
@@ -766,7 +766,7 @@
               </div>
               <div class="session-card-bottom">
                 <span class="mode-label">{{session.mode}} · {{session.level}}</span
-                ><strong ng-if="session.status !== 'completed'">🪙 {{session.reward}} tokens</strong
+                ><strong ng-if="session.status !== 'completed'">🪙 {{session.reward}} per learner<span ng-if="session.tokensAwarded"> · +{{session.tokensAwarded}} earned</span></strong
                 ><strong ng-if="session.status === 'completed'">🪙 +{{session.tokensAwarded}} earned</strong>
               </div>
               <div class="session-actions">
@@ -787,13 +787,13 @@
                   ng-if="session.status === 'published'"
                   ng-click="completeSession(session)"
                   ng-disabled="!session.canComplete"
-                  title="{{session.canComplete ? 'Mark as taught and earn your tokens' : 'Available once a student has taken part'}}"
+                  title="{{session.canComplete ? 'Close this session (you were already paid as learners joined)' : 'Available once a student has joined'}}"
                 >
                   ✓ Complete
                 </button>
               </div>
               <small class="waiting-note" ng-if="session.status === 'published' && !session.canComplete">
-                Waiting for your first learner. Tokens are paid after someone takes part.
+                Waiting for your first learner. You are paid as soon as someone joins.
               </small>
             </article>
           </div>

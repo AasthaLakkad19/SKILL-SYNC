@@ -444,3 +444,641 @@
   margin: 0 auto;
 }
 
+/* =========================================================
+   SKILLSYNC – PHONE / MOBILE STYLES
+   (max-width: 600px)
+   Compatible with the new sidebar + header CSS
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  /* ---------- Layout ---------- */
+  .dashboard {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "main";
+  }
+
+  /* ---------- Header ---------- */
+  .dashboard .top-header {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+
+  .dashboard .menu-btn {
+    display: flex;                 /* show hamburger */
+  }
+
+  .dashboard .search-box {
+    display: none;                 /* hide search on small screens */
+  }
+
+  .dashboard .logo {
+    font-size: 1.25rem;
+  }
+
+  .dashboard .logo-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .dashboard .header-right {
+    gap: 6px;
+  }
+
+  .dashboard .token-display {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+  }
+
+  .dashboard .profile-name,
+  .dashboard .arrow {
+    display: none;                 /* only show avatar on phone */
+  }
+
+  .dashboard .profile-menu {
+    padding: 0.25rem;
+  }
+
+  .dashboard .profile-dropdown {
+    min-width: 200px;
+    right: 0;
+  }
+
+  /* ---------- Sidebar (slide-in drawer) ---------- */
+  .dashboard .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 260px;
+    height: 100vh;
+    padding-top: 24px;
+    transform: translateX(-100%);
+    transition: transform 0.3s var(--ease);
+    z-index: 300;
+    box-shadow: var(--shadow-lg);
+    border-right: none;
+    overflow-y: auto;
+  }
+
+  .dashboard .sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  /* Dark overlay when sidebar is open */
+  .dashboard.sidebar-open::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    z-index: 250;
+  }
+
+  /* ---------- Main Content ---------- */
+  .dashboard .main-content {
+    padding: 16px 14px 32px;
+    gap: 20px;
+    max-width: 100%;
+  }
+
+  /* ---------- Welcome ---------- */
+  .dashboard .welcome-section h1 {
+    font-size: 1.55rem;
+    line-height: 1.25;
+  }
+
+  .dashboard .welcome-section p {
+    font-size: 0.93rem;
+  }
+
+  .dashboard .welcome-label {
+    font-size: 0.72rem;
+  }
+
+  /* ---------- Token Card ---------- */
+  .dashboard .token-welcome-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 16px;
+  }
+
+  .dashboard .token-icon {
+    font-size: 2rem;
+  }
+
+  .dashboard .token-content h2 {
+    font-size: 1.1rem;
+  }
+
+  .dashboard .token-content p {
+    font-size: 0.88rem;
+  }
+
+  .dashboard .token-welcome-card .primary-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ---------- Section Headings ---------- */
+  .dashboard .section-heading {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .dashboard .section-heading h2 {
+    font-size: 1.25rem;
+  }
+
+  .dashboard .section-heading p {
+    font-size: 0.88rem;
+  }
+
+  /* ---------- Action Cards ---------- */
+  .dashboard .action-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .dashboard .action-card {
+    padding: 18px 16px;
+  }
+
+  /* ---------- Profile Completion ---------- */
+  .dashboard .profile-completion {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+    padding: 18px 16px;
+  }
+
+  .dashboard .completion-left,
+  .dashboard .completion-right {
+    min-width: 100%;
+  }
+
+  .dashboard .profile-completion .primary-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ---------- Popular Skills ---------- */
+  .dashboard .skills-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .dashboard .skills-grid .skill-card {
+    padding: 12px 14px;
+  }
+
+  /* ---------- Empty Project ---------- */
+  .dashboard .empty-project {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 16px;
+  }
+
+  .dashboard .empty-project .primary-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ---------- Why SkillSync ---------- */
+  .dashboard .why-skillsync h2 {
+    font-size: 1.3rem;
+    margin-bottom: 18px;
+  }
+
+  .dashboard .why-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* =========================================================
+     CHATBOT – Phone adjustments
+     ========================================================= */
+
+  .chatbot-container {
+    right: 16px;
+    bottom: 16px;
+  }
+
+  .chatbot-btn {
+    width: 56px;
+    height: 56px;
+  }
+
+  .chatbot-btn img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .chat-window {
+    width: calc(100vw - 32px);
+    max-width: 360px;
+    height: 70vh;
+    max-height: 520px;
+    bottom: 72px;
+    right: 0;
+    border-radius: 18px;
+  }
+
+  .chat-header {
+    min-height: 64px;
+    padding: 12px 14px;
+  }
+
+  .chat-body {
+    padding: 14px;
+  }
+
+  .bot-message,
+  .user-message {
+    max-width: 88%;
+    font-size: 13px;
+  }
+
+  .chat-footer input {
+    height: 40px;
+  }
+
+  .chat-footer button {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* Extra small phones (≤ 380px) */
+@media (max-width: 380px) {
+
+  .dashboard .main-content {
+    padding: 14px 12px 28px;
+  }
+
+  .dashboard .welcome-section h1 {
+    font-size: 1.4rem;
+  }
+
+  .dashboard .token-display {
+    display: none;                 /* hide tokens on very small screens */
+  }
+
+  .chat-window {
+    width: calc(100vw - 24px);
+    height: 68vh;
+  }
+
+  .chatbot-container {
+    right: 12px;
+    bottom: 12px;
+  }
+}
+
+/* =====================================================
+   NOTIFICATIONS (bell in the header)
+   Desktop: dropdown under the bell.  Phone: full-width sheet under the header.
+   ===================================================== */
+.dashboard .notif-wrap {
+  position: relative;
+}
+.dashboard .notif-btn {
+  position: relative;
+}
+.dashboard .notif-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #e5484d;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  border: 2px solid var(--white);
+  box-sizing: content-box;
+  pointer-events: none;
+}
+
+.dashboard .notif-panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: -60px;
+  width: 380px;
+  max-width: calc(100vw - 24px);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 250;
+  overflow: hidden;
+  animation: dropdownFade var(--transition-base);
+}
+.dashboard .notif-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+.dashboard .notif-head strong {
+  font-size: 1rem;
+  color: var(--text-dark);
+}
+.dashboard .notif-pill {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #fdecec;
+  color: #c53b40;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+.dashboard .notif-close {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.dashboard .notif-close:hover {
+  background: var(--surface);
+}
+.dashboard .notif-body {
+  max-height: min(70vh, 460px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.dashboard .notif-section {
+  margin: 0;
+  padding: var(--space-3) var(--space-4) var(--space-1);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.dashboard .notif-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--surface);
+}
+.dashboard .notif-item:last-child {
+  border-bottom: none;
+}
+.dashboard .notif-avatar {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ddd3eb, #dcebf8);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-decoration: none;
+}
+.dashboard .notif-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.dashboard .notif-content {
+  flex: 1;
+  min-width: 0;
+}
+.dashboard .notif-text {
+  margin: 0 0 2px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--text-dark);
+  overflow-wrap: anywhere;
+}
+.dashboard .notif-name {
+  font-weight: 700;
+  color: var(--text-dark);
+  text-decoration: none;
+}
+.dashboard .notif-name:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+.dashboard .notif-meta {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.dashboard .notif-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+.dashboard .notif-actions button {
+  min-height: 34px;
+  padding: 0 16px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+.dashboard .notif-actions button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.dashboard .notif-accept {
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+.dashboard .notif-accept:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+.dashboard .notif-decline {
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--text-muted);
+}
+.dashboard .notif-decline:hover:not(:disabled) {
+  background: var(--surface);
+}
+.dashboard .notif-view {
+  padding: 6px 4px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+}
+.dashboard .notif-view:hover {
+  text-decoration: underline;
+}
+.dashboard .notif-dot {
+  flex: 0 0 9px;
+  width: 9px;
+  height: 9px;
+  margin-top: 8px;
+  border-radius: 50%;
+  background: #3b82f6;
+}
+.dashboard .notif-accepted {
+  background: #f7fbf9;
+}
+.dashboard .notif-empty,
+.dashboard .notif-state {
+  padding: var(--space-8) var(--space-5);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+.dashboard .notif-empty span {
+  display: block;
+  font-size: 2rem;
+  margin-bottom: var(--space-2);
+  opacity: 0.6;
+}
+.dashboard .notif-empty strong {
+  display: block;
+  color: var(--text-dark);
+  margin-bottom: 4px;
+}
+.dashboard .notif-empty p {
+  margin: 0;
+}
+.dashboard .notif-message,
+.dashboard .notif-error {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.83rem;
+  font-weight: 500;
+}
+.dashboard .notif-message {
+  background: #e8f7ef;
+  color: #287e58;
+}
+.dashboard .notif-error {
+  background: #fdecec;
+  color: #c53b40;
+}
+
+/* Small confirmation toast shared by Find Teammates + Profile */
+.ss-toast {
+  position: fixed;
+  left: 50%;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  max-width: calc(100vw - 32px);
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: #1f2937;
+  color: #fff;
+  font-size: 0.9rem;
+  text-align: center;
+  z-index: 1000;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+
+/* =====================================================
+   RESPONSIVE SAFETY NET (all pages that use the dashboard shell)
+   ===================================================== */
+
+/* A grid/flex child can't shrink below its content unless min-width is 0;
+   without this, one wide table or long word pushes the whole page sideways. */
+.dashboard .main-content {
+  min-width: 0;
+}
+.dashboard img,
+.dashboard video {
+  max-width: 100%;
+}
+.dashboard .main-content table {
+  max-width: 100%;
+}
+
+/* Header: keep everything on one row on narrow phones */
+@media (max-width: 900px) {
+  .dashboard aside.sidebar {
+    height: 100vh;
+    height: 100dvh;
+    overscroll-behavior: contain;
+    padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
+  }
+  /* page behind the open drawer shouldn't scroll */
+  body:has(.dashboard.sidebar-open) {
+    overflow: hidden;
+  }
+  /* real, tappable surface for the dark area (closes the drawer, see app.js) */
+  .dashboard.sidebar-open::after {
+    cursor: pointer;
+  }
+  .dashboard .top-header {
+    padding-top: max(var(--space-3), env(safe-area-inset-top));
+    padding-left: max(var(--space-4), env(safe-area-inset-left));
+    padding-right: max(var(--space-4), env(safe-area-inset-right));
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard .header-icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  /* notification sheet spans the screen under the header */
+  .dashboard .notif-wrap {
+    position: static;
+  }
+  .dashboard .notif-panel {
+    position: fixed;
+    top: 62px;
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-width: none;
+    border-radius: 16px;
+  }
+  .dashboard .notif-body {
+    max-height: calc(100vh - 62px - 70px);
+    max-height: calc(100dvh - 62px - 70px);
+  }
+  .dashboard .notif-actions button {
+    min-height: 40px;
+    padding: 0 18px;
+  }
+  .dashboard .notif-view {
+    padding: 10px 6px;
+  }
+  .dashboard .notif-close {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 400px) {
+  .dashboard .logo-text {
+    display: none;
+  }
+}

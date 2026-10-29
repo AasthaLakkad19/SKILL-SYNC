@@ -84,8 +84,35 @@
               <span>📘 {{s.skill}}</span>
               <span>🎮 {{s.activity}}</span>
               <span>👥 {{s.participantCount}} learner<span ng-if="s.participantCount !== 1">s</span></span>
-              <span ng-if="!isOwner">🪙 Teacher earns {{s.reward}} tokens</span>
+              <span ng-if="!isOwner && !s.joined">🪙 {{s.reward}} tokens to join</span>
+              <span ng-if="!isOwner && s.joined">✓ You joined</span>
+              <span ng-if="isOwner">🪙 {{s.reward}} tokens per learner</span>
             </div>
+          </section>
+
+          <!-- ===== JOIN (pay) — learners only, until they have joined ===== -->
+          <section class="panel join-panel" ng-if="!isOwner && !s.joined">
+            <div class="panel-head"><h2>🔒 Join to unlock this session</h2></div>
+
+            <div ng-if="s.status === 'published'">
+              <p class="panel-text">
+                Joining costs <b>{{s.reward}} Skill Tokens</b>. The tokens go straight to
+                <b>{{s.teacher || 'the teacher'}}</b>, and you unlock
+                {{ s.mode === 'Quiz / practice session' ? 'the quiz' :
+                   s.mode === 'Live online' ? 'the live class' :
+                   s.mode === 'Recorded mini lesson' ? 'the lesson video' :
+                   s.mode === 'In person on campus' ? 'the meeting place' : 'the shared repo and details' }}.
+                You only pay once.
+              </p>
+              <button class="btn-primary" ng-click="joinSession()" ng-disabled="busy">
+                🪙 Join for {{s.reward}} tokens
+              </button>
+              <p class="panel-text join-error" role="alert" ng-if="joinError">{{joinError}}</p>
+            </div>
+
+            <p class="panel-text" ng-if="s.status === 'completed'">
+              This session has ended, so it can't be joined any more.
+            </p>
           </section>
 
           <!-- ===== Teacher tools ===== -->
@@ -121,7 +148,7 @@
           </section>
 
           <!-- ===== LIVE ONLINE ===== -->
-          <section class="panel" ng-if="s.mode === 'Live online'">
+          <section class="panel" ng-if="canSee() && s.mode === 'Live online'">
             <div class="panel-head">
               <h2>📡 Live class</h2>
               <span class="panel-sub" ng-if="live.state === 'live' || live.state === 'watching'">{{live.viewers}} watching</span>
@@ -191,7 +218,7 @@
           </section>
 
           <!-- ===== RECORDED ===== -->
-          <section class="panel" ng-if="s.mode === 'Recorded mini lesson'">
+          <section class="panel" ng-if="canSee() && s.mode === 'Recorded mini lesson'">
             <div class="panel-head"><h2>🎬 Lesson video</h2></div>
             <video
               class="lesson-video"
@@ -216,7 +243,7 @@
           </section>
 
           <!-- ===== QUIZ ===== -->
-          <section class="panel" ng-if="s.mode === 'Quiz / practice session'">
+          <section class="panel" ng-if="canSee() && s.mode === 'Quiz / practice session'">
             <div class="panel-head">
               <h2>🧠 Quiz · {{s.details.quizCount}} question<span ng-if="s.details.quizCount !== 1">s</span></h2>
               <span class="best-pill" ng-if="s.myBest">Your best: {{s.myBest.score}}/{{s.myBest.total}} · {{s.myBest.attempts}} attempt<span ng-if="s.myBest.attempts !== 1">s</span></span>
@@ -313,7 +340,7 @@
           </section>
 
           <!-- ===== IN PERSON ===== -->
-          <section class="panel" ng-if="s.mode === 'In person on campus'">
+          <section class="panel" ng-if="canSee() && s.mode === 'In person on campus'">
             <div class="panel-head"><h2>📍 On campus</h2></div>
             <p class="panel-text">
               <b>Where:</b> {{s.details.location || 'The teacher will share the place with learners who join.'}}
@@ -325,7 +352,7 @@
           </section>
 
           <!-- ===== PAIR PROGRAMMING ===== -->
-          <section class="panel" ng-if="s.mode === 'Pair programming'">
+          <section class="panel" ng-if="canSee() && s.mode === 'Pair programming'">
             <div class="panel-head"><h2>👩‍💻 Pair programming</h2></div>
             <p class="panel-text" ng-if="s.details.repoLink">
               Starter project:

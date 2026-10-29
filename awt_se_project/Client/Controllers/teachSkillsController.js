@@ -508,7 +508,7 @@
         if (!s.canComplete) {
           showToast(
             $scope.limits.requireLearnerToComplete
-              ? "Tokens are awarded once a student has taken part. Share your session first."
+              ? "You can complete a session once a student has joined. Share your session first."
               : "This session can't be completed yet."
           );
           return;
@@ -517,7 +517,6 @@
           .patch(API + "/sessions/" + s.id + "/complete")
           .then(function (r) {
             showToast(r.data.message);
-            if (typeof r.data.balance === "number") $scope.tokens = r.data.balance;
             return Promise.all([loadSessions(), loadStats()]).then(function () { $scope.$applyAsync(); });
           })
           .catch(function (err) { fail(err, "Couldn't complete the session."); });

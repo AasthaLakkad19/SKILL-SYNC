@@ -36,6 +36,7 @@ router.post("/sessions/:id/live/stop", live.stopLive);
 
 // ---- learners: browse + open + take part ----
 router.get("/discover", teach.discover);
+router.get("/joined", teach.joinedSessions);
 router.get("/view/:id", teach.viewSession);
 router.post("/view/:id/join", teach.joinSession);
 router.post("/view/:id/quiz", teach.submitQuiz);
