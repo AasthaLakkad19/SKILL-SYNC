@@ -2,8 +2,9 @@ angular.module("skillSyncApp").controller("ProfileController", [
   "$scope",
   "$window",
   "$http",
+  "$timeout",
 
-  function ($scope, $window, $http) {
+  function ($scope, $window, $http, $timeout) {
 
     // ==========================================
     // SIDEBAR
@@ -23,11 +24,27 @@ angular.module("skillSyncApp").controller("ProfileController", [
     // PROFILE
     // ==========================================
 
-    $scope.isOwnProfile = true;
+    // profile.html            -> my profile
+    // profile.html?userId=ID  -> that person's profile (View Profile / bell)
+    var viewedUserId = (function () {
+      try {
+        return new URLSearchParams($window.location.search).get("userId") || "";
+      } catch (e) {
+        return "";
+      }
+    })();
+
+    $scope.isOwnProfile = !viewedUserId;
 
     $scope.loading = true;
 
     $scope.error = "";
+
+    $scope.notFound = false;
+
+    $scope.notice = "";
+
+    $scope.connecting = false;
 
 
     $scope.profile = {
@@ -125,8 +142,9 @@ angular.module("skillSyncApp").controller("ProfileController", [
 
         method: "GET",
 
-        url:
-          "/api/profile/me",})
+        url: viewedUserId
+          ? "/api/profile/" + encodeURIComponent(viewedUserId)
+          : "/api/profile/me",})
 
 
       .then(function (response) {
@@ -145,6 +163,12 @@ angular.module("skillSyncApp").controller("ProfileController", [
 
           $scope.profile =
             response.data.profile;
+
+          $scope.isOwnProfile =
+            $scope.profile.isOwnProfile !== false;
+
+          $scope.profile.connection =
+            $scope.profile.connection || "none";
 
 
           // Safety defaults
@@ -221,9 +245,21 @@ angular.module("skillSyncApp").controller("ProfileController", [
           error
         );
 
+        if (error.status === 404) {
 
-        $scope.error =
-          "Unable to connect to server.";
+          $scope.notFound = true;
+
+          $scope.error =
+            "This profile doesn't exist or is no longer available.";
+
+        }
+
+        else if (error.status !== 401) {
+
+          $scope.error =
+            "Unable to connect to server.";
+
+        }
 
       })
 
@@ -238,16 +274,99 @@ angular.module("skillSyncApp").controller("ProfileController", [
 
 
     // ==========================================
-    // CONNECT
+    // CONNECT  (same rules as the Find Teammates page)
+    //   none -> send request     requested -> cancel it
+    //   incoming -> accept       connected -> remove (asks first)
     // ==========================================
+
+    function say(message) {
+
+      $scope.notice = message;
+
+      $timeout(function () {
+
+        $scope.notice = "";
+
+      }, 3000);
+
+    }
+
+    $scope.connectLabel = function () {
+
+      return {
+
+        none: "Connect",
+
+        requested: "Requested ✓",
+
+        incoming: "Accept request",
+
+        connected: "Connected ✓"
+
+      }[$scope.profile.connection] || "Connect";
+
+    };
 
     $scope.connect = function () {
 
-      alert(
-        "Connection request sent to " +
-        $scope.profile.name +
-        "!"
-      );
+      if ($scope.connecting || $scope.isOwnProfile) return;
+
+      var state = $scope.profile.connection;
+
+      var url = "/api/teammates/" + $scope.profile.userId + "/connect";
+
+      var request;
+
+      if (state === "connected") {
+
+        if (!$window.confirm("Remove your connection with " + $scope.profile.name + "?")) return;
+
+        request = $http.delete(url);
+
+      }
+
+      else if (state === "requested") {
+
+        request = $http.delete(url);
+
+      }
+
+      else {
+
+        request = $http.put(url, {});
+
+      }
+
+      $scope.connecting = true;
+
+      request
+
+        .then(function (res) {
+
+          $scope.profile.connection = res.data.connection;
+
+          say(res.data.message);
+
+          // keep the bell in the header up to date
+          $scope.$root.$broadcast("connections:changed");
+
+        })
+
+        .catch(function (err) {
+
+          if (err.status !== 401) {
+
+            say((err.data && err.data.message) || "Something went wrong. Please try again.");
+
+          }
+
+        })
+
+        .finally(function () {
+
+          $scope.connecting = false;
+
+        });
 
     };
 
@@ -284,6 +403,25 @@ angular.module("skillSyncApp").controller("ProfileController", [
     // ==========================================
 
     $scope.loadProfile();
+
+    // The bell accepted / declined a request -> refresh the Connect button
+    $scope.$on("connections:changed", function () {
+
+      if (!$scope.isOwnProfile && !$scope.connecting) {
+
+        $http.get("/api/profile/" + encodeURIComponent(viewedUserId)).then(function (response) {
+
+          if (response.data && response.data.profile) {
+
+            $scope.profile.connection = response.data.profile.connection || "none";
+
+          }
+
+        });
+
+      }
+
+    });
 
   }
 

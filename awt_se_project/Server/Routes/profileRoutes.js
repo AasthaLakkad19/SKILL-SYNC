@@ -6,5 +6,6 @@ const profileController = require("../controllers/profileController");
 router.use(protect);
 
 router.get("/me", profileController.getMyProfile);
+router.get("/:userId", profileController.getProfileById);
 
 module.exports = router;

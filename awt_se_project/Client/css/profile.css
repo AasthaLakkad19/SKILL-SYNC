@@ -888,3 +888,82 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================================
+   VIEWING SOMEONE ELSE'S PROFILE
+   ========================================= */
+.profile-back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border);
+  color: var(--primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.profile-back:hover {
+  background: var(--white);
+  box-shadow: var(--shadow-xs);
+}
+.profile-notice {
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  background: var(--white);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+.profile-notice.error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #fdecec;
+  border-color: #f6c9ca;
+  color: #c53b40;
+}
+.profile-notice.error a {
+  color: #c53b40;
+  font-weight: 600;
+}
+.profile-actions .connect-btn.is-requested,
+.profile-actions .connect-btn.is-connected {
+  background: #e8f7ef;
+  border-color: #48b77f;
+  color: #287e58;
+}
+.profile-actions button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+.profile-avatar-img {
+  object-fit: cover;
+}
+
+@media (max-width: 640px) {
+  .profile-bio,
+  .profile-headline,
+  .profile-name-row h1 {
+    overflow-wrap: anywhere;
+  }
+  .profile-actions .primary-btn,
+  .profile-actions .outline-btn,
+  .profile-actions .ghost-btn {
+    min-height: 46px;
+  }
+  .profile-meta {
+    gap: 8px 14px;
+  }
+  .profile-stats {
+    flex-wrap: wrap;
+  }
+  .profile-back {
+    min-height: 40px;
+  }
+}

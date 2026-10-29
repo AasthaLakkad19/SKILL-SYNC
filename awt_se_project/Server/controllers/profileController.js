@@ -1,3 +1,7 @@
+const mongoose = require("mongoose");
+const User = require("../Models/User");
+const Connection = require("../Models/Connection");
+const { makePairKey } = require("../utils/teammateUtils");
 const Profile = require("../Models/Profile");
 const Resume = require("../Models/Resume");
 const Wallet = require("../Models/Wallet");
@@ -39,11 +43,12 @@ function getAchievementIcon(icon) {
 }
 
 // ============================================================
-// GET MY PROFILE
+// BUILD A PROFILE (shared by "my profile" and "someone else's profile")
+//   isSelf = true  -> may create the wallet row, as before
+//   isSelf = false -> read only
 // ============================================================
-exports.getMyProfile = async (req, res) => {
-  try {
-    const userId = String(req.user._id);
+async function buildProfile(userId, { isSelf, accountName }) {
+  {
 
     // ========================================================
     // 1. GET RESUME
@@ -71,6 +76,10 @@ exports.getMyProfile = async (req, res) => {
     // 3. GET OR CREATE WALLET   ← FIXED
     // ========================================================
     let wallet = await Wallet.findOne({ userId });
+
+    if (!wallet && !isSelf) {
+      wallet = { balance: 0, totalEarned: 0, totalSpent: 0 };
+    }
 
     if (!wallet) {
       wallet = await Wallet.create({
@@ -118,7 +127,7 @@ exports.getMyProfile = async (req, res) => {
     // ========================================================
     // NAME
     // ========================================================
-    const name = personalInfo.fullName || "New User";
+    const name = personalInfo.fullName || accountName || "New User";
     const initial = name.charAt(0).toUpperCase();
 
     // ========================================================
@@ -296,13 +305,23 @@ exports.getMyProfile = async (req, res) => {
       stats: stats
     };
 
-    // ========================================================
-    // RESPONSE
-    // ========================================================
-    res.status(200).json({
-      success: true,
-      profile: finalProfile
+    return finalProfile;
+  }
+}
+
+// ============================================================
+// GET MY PROFILE   GET /api/profile/me
+// ============================================================
+exports.getMyProfile = async (req, res) => {
+  try {
+    const profile = await buildProfile(String(req.user._id), {
+      isSelf: true,
+      accountName: req.user.name
     });
+    profile.isOwnProfile = true;
+    profile.connection = "self";
+
+    res.status(200).json({ success: true, profile });
   } catch (error) {
     console.error("Get profile error:", error);
 
@@ -310,6 +329,49 @@ exports.getMyProfile = async (req, res) => {
       success: false,
       message: "Failed to load profile",
       error: error.message
+    });
+  }
+};
+
+// ============================================================
+// GET SOMEONE ELSE'S PROFILE   GET /api/profile/:userId
+// Same shape as /me, plus how I'm connected to them, so the page can show
+// Connect / Requested / Accept / Connected.
+// ============================================================
+exports.getProfileById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const me = String(req.user._id);
+
+    if (!mongoose.isValidObjectId(userId)) {
+      return res.status(404).json({ success: false, message: "Profile not found" });
+    }
+    if (userId === me) return exports.getMyProfile(req, res);
+
+    const user = await User.findOne({ _id: userId, isActive: true }).select("name").lean();
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Profile not found" });
+    }
+
+    const profile = await buildProfile(userId, { isSelf: false, accountName: user.name });
+
+    // My relationship with them
+    const conn = await Connection.findOne({ pairKey: makePairKey(me, userId) }).lean();
+    let connection = "none";
+    if (conn && conn.status === "accepted") connection = "connected";
+    else if (conn && conn.status === "pending") connection = conn.requesterId === me ? "requested" : "incoming";
+
+    profile.isOwnProfile = false;
+    profile.connection = connection;
+    profile.requestId = connection === "incoming" ? String(conn._id) : null;
+
+    res.status(200).json({ success: true, profile });
+  } catch (error) {
+    console.error("Get profile by id error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to load profile"
     });
   }
 };

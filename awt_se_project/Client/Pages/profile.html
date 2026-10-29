@@ -2,9 +2,9 @@
 <html lang="en" ng-app="skillSyncApp">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <title>SkillSync - My Profile</title>
+    <title>Profile | SkillSync</title>
 
     <!-- Google Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -54,12 +54,12 @@
             <span>Teach Skills</span>
           </a>
 
-          <a href="findTeam.html" class="nav-item">
+          <a href="findTeam.html" class="nav-item" ng-class="{active: !isOwnProfile}">
             <span>👥</span>
             <span>Find Teammates</span>
           </a>
 
-          <a href="profile.html" class="nav-item active">
+          <a href="profile.html" class="nav-item" ng-class="{active: isOwnProfile}">
             <span>👤</span>
             <span>My Profile</span>
           </a>
@@ -80,8 +80,18 @@
 
       <!-- ================= MAIN CONTENT ================= -->
       <main class="main-content profile-page">
+        <a href="findTeam.html" class="profile-back" ng-if="!isOwnProfile">
+          <span aria-hidden="true">←</span> Back to Find Teammates
+        </a>
+
+        <div class="profile-notice error" role="alert" ng-if="error">
+          <strong>{{ error }}</strong>
+          <a href="findTeam.html" ng-if="notFound">Find teammates</a>
+        </div>
+        <div class="profile-notice" role="status" ng-if="loading">Loading profile…</div>
+
         <!-- ========== PROFILE HERO ========== -->
-        <section class="profile-hero">
+        <section class="profile-hero" ng-if="!notFound">
           <div class="profile-hero-bg"></div>
 
           <div class="profile-hero-content">
@@ -143,13 +153,25 @@
             </div>
 
             <div class="profile-actions">
-              <button class="primary-btn" ng-click="connect()">
-                <span aria-hidden="true">🤝</span> Connect
+              <button
+                class="primary-btn connect-btn"
+                type="button"
+                ng-if="!isOwnProfile"
+                ng-class="{'is-connected': profile.connection === 'connected', 'is-requested': profile.connection === 'requested'}"
+                ng-click="connect()"
+                ng-disabled="connecting"
+              >
+                <span aria-hidden="true">🤝</span> {{ connectLabel() }}
               </button>
-              <button class="outline-btn" ng-click="message()">
+              <button
+                class="outline-btn"
+                type="button"
+                ng-if="!isOwnProfile && profile.connection === 'connected'"
+                ng-click="message()"
+              >
                 <span aria-hidden="true">💬</span> Message
               </button>
-              <button class="ghost-btn" ng-click="editProfile()" ng-if="isOwnProfile">
+              <button class="ghost-btn" type="button" ng-click="editProfile()" ng-if="isOwnProfile">
                 <span aria-hidden="true">✏️</span> Edit Profile
               </button>
             </div>
@@ -181,7 +203,7 @@
         </section>
 
         <!-- ========== TWO COLUMN LAYOUT ========== -->
-        <div class="profile-grid">
+        <div class="profile-grid" ng-if="!notFound">
           <!-- LEFT COLUMN -->
           <div class="profile-col-main">
             <!-- Skills -->
@@ -334,7 +356,7 @@
                 <p class="tokens-note">
                   Public balance only. Detailed wallet activity is private.
                 </p>
-                <div class="tokens-breakdown">
+                <div class="tokens-breakdown" ng-if="isOwnProfile">
                   <div>
                     <span>Earned teaching</span>
                     <strong>{{ profile.tokenSummary.earned }}</strong>
@@ -359,6 +381,7 @@
             </section>
           </div>
         </div>
+        <div class="ss-toast" ng-if="notice" role="status">{{ notice }}</div>
       </main>
     </div>
 
