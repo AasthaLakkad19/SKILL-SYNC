@@ -80,14 +80,14 @@
 
       <!-- ================= MAIN CONTENT ================= -->
       <main class="main-content learn-page">
-        <!-- Page heading + search -->
+        <!-- Page heading -->
         <section class="learn-hero">
           <div class="learn-hero-text">
             <span class="welcome-label">LEARN SKILLS</span>
             <h1>Learn something new from a fellow student</h1>
             <p>
-              Pick a skill, choose who you want to learn from, and spend Skill
-              Tokens to get started.
+              Join a session another student is teaching. You pay its token price
+              once, and the tokens go straight to your teacher.
             </p>
           </div>
 
@@ -102,12 +102,14 @@
 
         <!-- Flow -->
         <ol class="learn-flow" aria-label="How learning works">
-          <li><span>1</span> Search a skill</li>
-          <li><span>2</span> Choose a teacher</li>
-          <li><span>3</span> Spend tokens</li>
-          <li><span>4</span> Start learning</li>
-          <li><span>5</span> Complete the skill</li>
+          <li><span>1</span> Find a session</li>
+          <li><span>2</span> Open it</li>
+          <li><span>3</span> Join with tokens</li>
+          <li><span>4</span> Learn</li>
+          <li><span>5</span> Your teacher is paid</li>
         </ol>
+
+        <div class="learn-alert" role="alert" ng-if="loadError">{{loadError}}</div>
 
         <!-- Search + filters -->
         <section class="learn-toolbar">
@@ -116,8 +118,8 @@
             <input
               type="text"
               ng-model="filters.query"
-              placeholder="Search Python, Java, Figma, React..."
-              aria-label="Search skills"
+              placeholder="Search a skill, topic or teacher..."
+              aria-label="Search sessions"
             />
             <button
               type="button"
@@ -145,100 +147,84 @@
           <label class="sort-box">
             <span>Sort by</span>
             <select ng-model="filters.sort">
-              <option value="-rating">Top rated</option>
-              <option value="tokens">Lowest token cost</option>
-              <option value="-learners">Most learners</option>
-              <option value="name">Name (A–Z)</option>
+              <option value="new">Live first, then newest</option>
+              <option value="price">Lowest token price</option>
+              <option value="learners">Most learners</option>
             </select>
           </label>
         </section>
 
-        <!-- Recommended -->
-        <section class="section" ng-show="!filters.query && filters.category === 'All'">
+        <!-- Student sessions -->
+        <section class="section" id="student-sessions">
           <div class="section-heading">
             <div>
-              <span class="section-label">RECOMMENDED FOR YOU</span>
-              <h2>Based on your interests</h2>
-              <p>Skills that match the interests on your profile.</p>
+              <span class="section-label">TAUGHT BY STUDENTS</span>
+              <h2>{{visibleSessions().length}} {{visibleSessions().length === 1 ? 'session' : 'sessions'}} to learn from</h2>
+              <p>Real sessions published by other students on Teach Skills.</p>
             </div>
           </div>
 
-          <div class="reco-grid">
-            <article class="reco-card" ng-repeat="s in recommended()">
-              <div class="skill-logo" aria-hidden="true">{{s.icon}}</div>
-              <div class="reco-info">
-                <h3>{{s.name}}</h3>
-                <span>{{s.level}} • {{s.tokens}} tokens</span>
-              </div>
-              <button type="button" class="outline-btn" ng-click="openSkill(s)">
-                View
-              </button>
-            </article>
-          </div>
-        </section>
-
-        <!-- All skills -->
-        <section class="section">
-          <div class="section-heading">
-            <div>
-              <span class="section-label">ALL SKILLS</span>
-              <h2>{{visibleSkills().length}} skills available</h2>
-              <p>Each skill shows its level, token cost and rating.</p>
-            </div>
+          <div class="empty-state" ng-if="loading">
+            <div class="empty-icon" aria-hidden="true">⏳</div>
+            <div><h3>Loading sessions…</h3></div>
           </div>
 
-          <div class="catalog-grid" ng-if="visibleSkills().length">
-            <article class="catalog-card" ng-repeat="s in visibleSkills()">
+          <div class="catalog-grid" ng-if="!loading && visibleSessions().length">
+            <article class="catalog-card session-card" ng-repeat="s in visibleSessions() track by s.id">
               <header>
-                <div class="skill-logo" aria-hidden="true">{{s.icon}}</div>
-                <button
-                  type="button"
-                  class="save-btn"
-                  ng-class="{'saved': isSaved(s)}"
-                  ng-click="toggleSave(s)"
-                  aria-label="Save {{s.name}} for later"
-                  aria-pressed="{{isSaved(s)}}"
-                >
-                  {{isSaved(s) ? '★' : '☆'}}
-                </button>
+                <div class="skill-logo" aria-hidden="true">{{modeIcon(s.mode)}}</div>
+                <span class="live-badge" ng-if="s.live && s.live.isLive">
+                  <span class="live-dot"></span> LIVE
+                </span>
+                <span class="joined-badge" ng-if="isJoined(s)">✓ Joined</span>
               </header>
 
-              <h3>{{s.name}}</h3>
-              <p class="catalog-desc">{{s.short}}</p>
+              <h3>{{s.title}}</h3>
+              <p class="session-teacher">
+                by <strong>{{s.teacher || 'A student'}}</strong> · {{s.skill}}
+              </p>
+              <p class="catalog-desc session-desc">{{s.description}}</p>
 
               <div class="meta-row">
                 <span class="tag">{{s.level}}</span>
-                <span class="tag">{{s.category}}</span>
+                <span class="tag">{{s.mode}}</span>
                 <span class="tag">{{s.duration}}</span>
               </div>
 
-              <div class="catalog-foot">
-                <div class="rating">
-                  <span aria-hidden="true">⭐</span>
-                  <strong>{{s.rating | number:1}}</strong>
-                  <small>({{s.reviews.length}} reviews)</small>
-                </div>
-                <div class="cost">🪙 {{s.tokens}}</div>
-              </div>
-
               <div class="catalog-actions">
-                <small>{{s.teachers.length}} teachers • {{s.learners}} learners</small>
-                <button type="button" class="primary-btn" ng-click="openSkill(s)">
-                  View skill
+                <div class="price-box">
+                  <strong ng-class="{'price-low': !isJoined(s) && !canAfford(s)}">
+                    <span ng-if="isJoined(s)">Joined</span>
+                    <span ng-if="!isJoined(s)">🪙 {{s.reward}} tokens</span>
+                  </strong>
+                  <small>
+                    {{s.participantCount || 0}}
+                    {{s.participantCount === 1 ? 'learner' : 'learners'}}
+                  </small>
+                </div>
+                <button type="button" class="primary-btn" ng-click="openSession(s)">
+                  <span ng-if="isJoined(s)">Open session</span>
+                  <span ng-if="!isJoined(s)">{{ s.live && s.live.isLive ? 'View & join live' : 'View & join' }}</span>
                 </button>
               </div>
+              <small class="hint low" ng-if="!isJoined(s) && !canAfford(s)">
+                You need {{s.reward - tokens}} more token{{s.reward - tokens === 1 ? '' : 's'}}. Teach a skill to earn them.
+              </small>
             </article>
           </div>
 
-          <div class="empty-state" ng-if="!visibleSkills().length">
-            <div class="empty-icon" aria-hidden="true">🔎</div>
+          <div class="empty-state" ng-if="!loading && !visibleSessions().length">
+            <div class="empty-icon" aria-hidden="true">🎓</div>
             <div>
-              <h3>No skills match your search</h3>
-              <p>Try a different keyword, or clear the category filter.</p>
+              <h3>{{ sessions.length ? 'No sessions match your search' : 'No student sessions yet' }}</h3>
+              <p ng-if="!sessions.length">
+                When other students publish a session on Teach Skills, it will show up here.
+                You could be the first to teach one.
+              </p>
+              <p ng-if="sessions.length">Try a different keyword, or clear the filters.</p>
             </div>
-            <button type="button" class="outline-btn" ng-click="resetFilters()">
-              Reset filters
-            </button>
+            <a href="teachSkills.html" class="outline-btn" ng-if="!sessions.length">Teach a skill</a>
+            <button type="button" class="outline-btn" ng-if="sessions.length" ng-click="resetFilters()">Clear filters</button>
           </div>
         </section>
 
@@ -247,8 +233,7 @@
           <div class="section-heading">
             <div>
               <span class="section-label">MY LEARNING</span>
-              <h2>Track your progress</h2>
-              <p>Skills you are learning, have finished, or saved for later.</p>
+              <h2>Sessions you joined</h2>
             </div>
           </div>
 
@@ -260,7 +245,7 @@
               ng-class="{'tab-active': tab === 'learning'}"
               ng-click="tab = 'learning'"
             >
-              Currently learning ({{countBy('learning')}})
+              In progress ({{countBy('learning')}})
             </button>
             <button
               type="button"
@@ -271,213 +256,41 @@
             >
               Completed ({{countBy('completed')}})
             </button>
-            <button
-              type="button"
-              role="tab"
-              class="tab"
-              ng-class="{'tab-active': tab === 'saved'}"
-              ng-click="tab = 'saved'"
-            >
-              Saved ({{savedSkills().length}})
-            </button>
           </div>
 
-          <!-- learning / completed -->
-          <div class="learning-list" ng-if="tab !== 'saved'">
-            <article
-              class="learning-item"
-              ng-repeat="item in myLearning | filter:{status: tab}:true"
-            >
-              <div class="skill-logo" aria-hidden="true">{{item.icon}}</div>
+          <div class="learning-list">
+            <article class="learning-item" ng-repeat="item in myLearning() track by item.id">
+              <div class="skill-logo" aria-hidden="true">{{modeIcon(item.mode)}}</div>
 
               <div class="learning-info">
-                <h3>{{item.name}}</h3>
-                <span>with {{item.teacher}}</span>
-
-                <div class="progress-header">
-                  <span>Progress</span>
-                  <strong>{{item.progress}}%</strong>
-                </div>
-                <div
-                  class="progress-bar"
-                  role="progressbar"
-                  aria-valuemin="0"
-                  aria-valuemax="100"
-                  aria-valuenow="{{item.progress}}"
-                >
-                  <div
-                    class="progress-fill"
-                    ng-style="{'width': item.progress + '%'}"
-                  ></div>
-                </div>
+                <h3>{{item.title}}</h3>
+                <span>with {{item.teacher || 'a student'}} · {{item.skill}}</span>
+                <span class="learning-meta">{{item.mode}} · {{item.level}} · {{item.duration}}</span>
               </div>
 
-              <div class="learning-actions" ng-if="item.status === 'learning'">
-                <button type="button" class="outline-btn" ng-click="addProgress(item)">
-                  Mark lesson done
-                </button>
-                <button
-                  type="button"
-                  class="primary-btn"
-                  ng-click="completeSkill(item)"
-                >
-                  Complete skill
+              <div class="learning-actions">
+                <span class="live-badge" ng-if="item.live && item.live.isLive">
+                  <span class="live-dot"></span> LIVE
+                </span>
+                <span class="done-badge" ng-if="item.status === 'completed'">✓ Completed</span>
+                <button type="button" class="primary-btn" ng-click="openSession(item)">
+                  {{ item.live && item.live.isLive ? 'Join live' : 'Open session' }}
                 </button>
               </div>
-
-              <span class="done-badge" ng-if="item.status === 'completed'">
-                ✓ Completed
-              </span>
             </article>
 
-            <div
-              class="empty-state"
-              ng-if="(myLearning | filter:{status: tab}:true).length === 0"
-            >
+            <div class="empty-state" ng-if="!loading && myLearning().length === 0">
               <div class="empty-icon" aria-hidden="true">📖</div>
               <div>
-                <h3 ng-if="tab === 'learning'">You are not learning anything yet</h3>
-                <h3 ng-if="tab === 'completed'">No completed skills yet</h3>
-                <p ng-if="tab === 'learning'">
-                  Open a skill above and send a request to start.
-                </p>
-                <p ng-if="tab === 'completed'">
-                  Finish a skill you are learning and it will show up here.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- saved -->
-          <div class="learning-list" ng-if="tab === 'saved'">
-            <article class="learning-item" ng-repeat="s in savedSkills()">
-              <div class="skill-logo" aria-hidden="true">{{s.icon}}</div>
-              <div class="learning-info">
-                <h3>{{s.name}}</h3>
-                <span>{{s.level}} • {{s.tokens}} tokens</span>
-              </div>
-              <div class="learning-actions">
-                <button type="button" class="outline-btn" ng-click="toggleSave(s)">
-                  Remove
-                </button>
-                <button type="button" class="primary-btn" ng-click="openSkill(s)">
-                  View skill
-                </button>
-              </div>
-            </article>
-
-            <div class="empty-state" ng-if="savedSkills().length === 0">
-              <div class="empty-icon" aria-hidden="true">☆</div>
-              <div>
-                <h3>Nothing saved yet</h3>
-                <p>Tap the star on a skill card to save it for later.</p>
+                <h3 ng-if="tab === 'learning'">You haven't joined any session yet</h3>
+                <h3 ng-if="tab === 'completed'">No completed sessions yet</h3>
+                <p ng-if="tab === 'learning'">Open a session above and join it with tokens to start learning.</p>
+                <p ng-if="tab === 'completed'">Sessions you joined show up here once the teacher finishes them.</p>
               </div>
             </div>
           </div>
         </section>
       </main>
-    </div>
-
-    <!-- ================= SKILL DETAILS MODAL ================= -->
-    <div
-      class="modal-backdrop"
-      ng-if="selected"
-      ng-click="closeSkill()"
-      ng-keydown="$event.keyCode === 27 && closeSkill()"
-    >
-      <div
-        class="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="skillTitle"
-        ng-click="$event.stopPropagation()"
-      >
-        <button type="button" class="modal-close" ng-click="closeSkill()" aria-label="Close">
-          ✕
-        </button>
-
-        <div class="modal-head">
-          <div class="skill-logo large" aria-hidden="true">{{selected.icon}}</div>
-          <div>
-            <h2 id="skillTitle">{{selected.name}}</h2>
-            <div class="meta-row">
-              <span class="tag">{{selected.level}}</span>
-              <span class="tag">{{selected.category}}</span>
-              <span class="tag">{{selected.duration}}</span>
-              <span class="tag tag-rating">⭐ {{selected.rating | number:1}}</span>
-            </div>
-          </div>
-        </div>
-
-        <p class="modal-desc">{{selected.description}}</p>
-
-        <h3 class="modal-sub">Topics covered</h3>
-        <ul class="topic-list">
-          <li ng-repeat="t in selected.topics">{{t}}</li>
-        </ul>
-
-        <h3 class="modal-sub">Choose who to learn from</h3>
-        <div class="teacher-list" role="radiogroup" aria-label="Teachers">
-          <label
-            class="teacher"
-            ng-repeat="t in selected.teachers"
-            ng-class="{'teacher-selected': chosenTeacher === t}"
-          >
-            <input type="radio" name="teacher" ng-model="$parent.chosenTeacher" ng-value="t" />
-            <div class="profile-picture" aria-hidden="true">{{t.name.charAt(0)}}</div>
-            <div class="teacher-info">
-              <strong>{{t.name}}</strong>
-              <span>{{t.bio}}</span>
-            </div>
-            <div class="teacher-rating">
-              <strong>⭐ {{t.rating | number:1}}</strong>
-              <small>{{t.sessions}} sessions</small>
-            </div>
-          </label>
-        </div>
-
-        <h3 class="modal-sub">Ratings &amp; reviews</h3>
-        <div class="review-list">
-          <blockquote class="review" ng-repeat="r in selected.reviews">
-            <div class="review-top">
-              <strong>{{r.by}}</strong>
-              <span>{{'★★★★★'.slice(0, r.rating)}}</span>
-            </div>
-            <p>{{r.text}}</p>
-          </blockquote>
-        </div>
-
-        <footer class="modal-foot">
-          <div class="cost-box">
-            <span>Cost</span>
-            <strong>🪙 {{selected.tokens}} tokens</strong>
-            <small ng-class="{'low': tokens < selected.tokens}">
-              You have {{tokens}}
-            </small>
-          </div>
-
-          <div class="modal-buttons">
-            <button type="button" class="outline-btn" ng-click="toggleSave(selected)">
-              {{isSaved(selected) ? '★ Saved' : '☆ Save'}}
-            </button>
-            <button
-              type="button"
-              class="primary-btn"
-              ng-click="requestToLearn()"
-              ng-disabled="!chosenTeacher || tokens < selected.tokens || isEnrolled(selected)"
-            >
-              {{ isEnrolled(selected) ? 'Already learning' : 'Request to learn' }}
-            </button>
-          </div>
-
-          <p class="hint" ng-if="!chosenTeacher && !isEnrolled(selected)">
-            Select a teacher to continue.
-          </p>
-          <p class="hint low" ng-if="tokens < selected.tokens">
-            Not enough tokens. Teach a skill to earn more.
-          </p>
-        </footer>
-      </div>
     </div>
 
     <!-- Toast -->

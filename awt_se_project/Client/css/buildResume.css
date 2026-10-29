@@ -978,67 +978,194 @@ textarea:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
+/* =========================================================
+   SKILLSYNC – FINAL MOBILE FIX (max-width: 768px)
+   ========================================================= */
 
-/* ============================================================
-   RESPONSIVE
-   Only page/profile/resume responsive styles remain here.
-   Header + Sidebar responsive styles are in home.css.
-   ============================================================ */
+@media screen and (max-width: 768px) {
 
-@media (max-width: 1024px) {
-  .dashboard .main-content {
-    padding: var(--space-7) var(--space-6) var(--space-9);
-  }
-}
-
-@media (max-width: 900px) {
-  .dashboard .main-content {
-    padding: var(--space-6) var(--space-4) var(--space-8);
+  /* ---------- Layout ---------- */
+  .dashboard {
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "header"
+      "main" !important;
   }
 
-  .profile-layout {
-    grid-template-columns: 1fr;
+  .dashboard .main-content,
+  .dashboard .main-content.profile-main {
+    padding: 16px 14px 40px !important;
+    gap: 18px !important;
+    max-width: 100% !important;
   }
 
-  .profile-sidebar {
-    position: static;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 600px) {
+  /* ---------- Title + Action Buttons ---------- */
   .profile-page-actions {
-    flex-direction: column;
-  }
-
-  .nav-actions {
-    width: 100%;
-    justify-content: flex-end;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
   }
 
   .page-title-block h1 {
-    font-size: 1.4rem;
+    font-size: 1.5rem !important;
   }
 
+  .nav-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .nav-actions button {
+    width: 100% !important;
+    text-align: center !important;
+    padding: 12px 16px !important;
+    font-size: 0.95rem !important;
+  }
+
+  /* ---------- Profile Layout ---------- */
+  .profile-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+
+  .profile-sidebar {
+    position: static !important;
+    width: 100% !important;
+  }
+
+  /* ========== FIX PROFILE CARD (most important) ========== */
+  .profile-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    padding: 24px 18px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .profile-card .photo-wrapper {
+    width: 100px !important;
+    height: 100px !important;
+    margin: 0 auto 14px !important;
+    order: 1 !important;
+  }
+
+  .profile-card h2 {
+    order: 2 !important;
+    font-size: 1.25rem !important;
+    margin: 0 0 6px !important;
+    text-align: center !important;
+    width: 100% !important;
+  }
+
+  .profile-card .bio-preview {
+    order: 3 !important;
+    text-align: center !important;
+    font-size: 0.9rem !important;
+    margin: 0 0 4px !important;
+    width: 100% !important;
+  }
+
+  .profile-card .completion {
+    order: 4 !important;
+    width: 100% !important;
+    margin-top: 16px !important;
+    text-align: left !important;
+  }
+
+  /* ---------- Side Navigation ---------- */
+  .side-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    gap: 8px !important;
+    padding: 4px 0 12px !important;
+    margin-bottom: 8px !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .side-nav a {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+    padding: 9px 16px !important;
+    margin: 0 !important;
+    border-radius: 50px !important;
+    background: #f1f5f9 !important;
+    font-size: 0.88rem !important;
+  }
+
+  .side-nav a::before {
+    display: none !important;
+  }
+
+  .side-nav a.active {
+    background: #eef2ff !important;
+    color: var(--primary) !important;
+    font-weight: 600 !important;
+  }
+
+  /* ---------- Cards & Forms ---------- */
   .card {
-    padding: 20px;
+    padding: 18px 16px !important;
+    margin-bottom: 16px !important;
   }
 
-  .resume {
-    width: 100%;
-    padding: 6mm;
+  .section-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
   }
 
+  .form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  .skill-input-row {
+    flex-direction: column !important;
+  }
+
+  .skill-input-row input,
+  .skill-input-row .btn-add-sm {
+    width: 100% !important;
+  }
+
+  .item-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  /* ---------- Bottom Buttons ---------- */
   .bottom-actions {
-    flex-direction: column-reverse;
+    flex-direction: column-reverse !important;
+    gap: 10px !important;
   }
 
-  .bottom-actions .btn-primary,
-  .bottom-actions .btn-outline {
-    width: 100%;
-    text-align: center;
+  .bottom-actions button {
+    width: 100% !important;
+    padding: 13px !important;
+  }
+
+  /* ---------- Modal ---------- */
+  .modal {
+    max-width: 100% !important;
+    max-height: 94vh !important;
+  }
+
+  .modal-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .resume,
+  #resume-paper {
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 16px !important;
   }
 }

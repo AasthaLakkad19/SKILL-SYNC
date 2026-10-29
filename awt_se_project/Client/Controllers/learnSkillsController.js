@@ -1,223 +1,167 @@
+// Learn Skills: everything here comes from the database.
+//   - "Student sessions"  = sessions other students published on Teach Skills
+//   - "My learning"       = sessions I joined (I paid the price, the teacher got it)
 angular.module("skillSyncApp").controller("LearnSkillsController", [
   "$scope",
-  "$timeout",
-  "$filter",
   "$http",
   "$window",
-  function ($scope, $timeout, $filter, $http, $window) {
-    var API = "/api/learn";
+  "$interval",
+  "$timeout",
+  function ($scope, $http, $window, $interval, $timeout) {
+    var POLL_MS = 60 * 1000;
 
     /* ---------- Page state ---------- */
     $scope.sidebarOpen = false;
-    $scope.tab = "learning";
-    $scope.selected = null;
-    $scope.chosenTeacher = null;
+    $scope.tab = "learning"; // "learning" | "completed"
     $scope.toast = "";
     $scope.loading = true;
-    $scope.busy = false; // blocks double clicks while a request is running
+    $scope.loadError = "";
 
-    $scope.categories = ["All", "Programming", "Design", "Data", "Career"];
-    $scope.filters = { query: "", category: "All", sort: "-rating" };
+    $scope.categories = ["All", "Programming", "Design", "Data", "Career", "Other"];
+    $scope.filters = { query: "", category: "All", sort: "new" };
 
     $scope.tokens = 0;
-    $scope.skills = [];
-    $scope.myLearning = [];
-    $scope.savedIds = [];
-    $scope.recommendedSkills = [];
+    $scope.sessions = []; // other students' open sessions
+    $scope.joined = []; // sessions I joined
 
-    /* ---------- HTTP helpers ---------- */
-    function authConfig() {
-      return {
-        headers: { Authorization: "Bearer " + localStorage.getItem("skillsync_token") }
-      };
-    }
-
+    /* ---------- helpers ---------- */
+    var toastTimer = null;
     function notify(message) {
       $scope.toast = message;
-      $timeout(function () { $scope.toast = ""; }, 3000);
+      if (toastTimer) $timeout.cancel(toastTimer);
+      toastTimer = $timeout(function () {
+        $scope.toast = "";
+      }, 3200);
     }
 
-    function handleError(err) {
-      if (err.status === 401) {
-        $window.location.href = "login.html";
-        return;
-      }
-      notify((err.data && err.data.message) || "Something went wrong. Please try again.");
+    function failed(err, fallback) {
+      if (err && err.status === 401) return; // app.js sends the person to the login page
+      $scope.loadError = (err && err.data && err.data.message) || fallback;
     }
 
-    function findSkill(id) {
-      return $scope.skills.filter(function (s) { return s.id === id; })[0];
-    }
-
-    function upsertSkill(updated) {
-      for (var i = 0; i < $scope.skills.length; i++) {
-        if ($scope.skills[i].id === updated.id) { $scope.skills[i] = updated; return; }
-      }
-    }
-
-    /* ---------- Initial load ---------- */
-    function loadPage() {
-      $scope.loading = true;
-      return Promise.all([
-        $http.get(API + "/skills", authConfig()),
-        $http.get(API + "/me", authConfig()),
-        $http.get(API + "/recommended", authConfig())
-      ])
-        .then(function (r) {
-          $scope.skills = r[0].data.skills;
-          $scope.tokens = r[1].data.tokens;
-          $scope.myLearning = r[1].data.myLearning;
-          $scope.savedIds = r[1].data.savedIds;
-          $scope.recommendedSkills = r[2].data.skills;
-        })
-        .catch(handleError)
-        .finally(function () {
-          $scope.loading = false;
-          $scope.$applyAsync();
-        });
-    }
-    loadPage();
-
-    function refreshRecommended() {
-      $http.get(API + "/recommended", authConfig()).then(function (r) {
-        $scope.recommendedSkills = r.data.skills;
+    /* ---------- Loading ---------- */
+    function loadWallet() {
+      return $http.get("/api/wallet").then(function (r) {
+        if (r.data && r.data.wallet) $scope.tokens = r.data.wallet.balance;
       });
     }
 
-    /* ---------- Lists used by the page ---------- */
-    $scope.recommended = function () {
-      return $scope.recommendedSkills;
+    function loadSessions() {
+      return $http.get("/api/teach/discover", { params: { limit: 60 } }).then(function (r) {
+        $scope.sessions = r.data.sessions || [];
+      });
+    }
+
+    function loadJoined() {
+      return $http.get("/api/teach/joined").then(function (r) {
+        $scope.joined = r.data.sessions || [];
+      });
+    }
+
+    function loadAll(initial) {
+      $scope.loadError = "";
+      return Promise.all([
+        loadSessions().catch(function (e) { failed(e, "Couldn't load student sessions."); }),
+        loadJoined().catch(function (e) { failed(e, "Couldn't load your sessions."); }),
+        loadWallet().catch(function () {}),
+      ]).then(function () {
+        $scope.loading = false;
+        $scope.$applyAsync();
+      });
+    }
+    loadAll(true);
+
+    // keep LIVE badges and balances fresh
+    var timer = $interval(function () {
+      if (!$window.document.hidden) loadAll();
+    }, POLL_MS);
+    $scope.$on("$destroy", function () { $interval.cancel(timer); });
+    // the bell accepted something / a page elsewhere changed tokens
+    $scope.$on("connections:changed", function () { loadWallet(); });
+
+    /* ---------- Filtering ---------- */
+    // Teach Skills uses its own category names; map them onto this page's chips.
+    var CATEGORY_MAP = {
+      "Web Development": "Programming",
+      "Programming": "Programming",
+      "Design & Creativity": "Design",
+      "Data & AI": "Data",
+      "Career & Communication": "Career",
+    };
+    function chipFor(session) {
+      return CATEGORY_MAP[session.category] || "Other";
+    }
+
+    var joinedIds = {};
+    function rebuildJoinedIds() {
+      joinedIds = {};
+      $scope.joined.forEach(function (j) { joinedIds[j.id] = true; });
+    }
+    $scope.$watchCollection("joined", rebuildJoinedIds);
+
+    $scope.isJoined = function (s) {
+      return !!joinedIds[s.id];
     };
 
-    $scope.visibleSkills = function () {
+    $scope.visibleSessions = function () {
       var q = ($scope.filters.query || "").toLowerCase().trim();
-      var list = $scope.skills.filter(function (s) {
-        var inCategory = $scope.filters.category === "All" || s.category === $scope.filters.category;
-        var matches =
-          !q ||
-          s.name.toLowerCase().indexOf(q) !== -1 ||
-          s.category.toLowerCase().indexOf(q) !== -1 ||
-          s.teachers.some(function (t) { return t.name.toLowerCase().indexOf(q) !== -1; });
-        return inCategory && matches;
+      var list = $scope.sessions.filter(function (s) {
+        var inCategory = $scope.filters.category === "All" || chipFor(s) === $scope.filters.category;
+        var haystack = [s.title, s.skill, s.category, s.teacher, s.description, s.mode, s.level]
+          .join(" ")
+          .toLowerCase();
+        return inCategory && (!q || haystack.indexOf(q) !== -1);
       });
-      return $filter("orderBy")(list, $scope.filters.sort);
+
+      var sort = $scope.filters.sort;
+      if (sort === "price") {
+        list.sort(function (a, b) { return a.reward - b.reward; });
+      } else if (sort === "learners") {
+        list.sort(function (a, b) { return (b.participantCount || 0) - (a.participantCount || 0); });
+      }
+      // "new" keeps the server order: live classes first, then newest
+      return list;
+    };
+
+    $scope.myLearning = function () {
+      var wantCompleted = $scope.tab === "completed";
+      return $scope.joined.filter(function (j) {
+        return wantCompleted ? j.status === "completed" : j.status !== "completed";
+      });
+    };
+
+    $scope.countBy = function (tab) {
+      return $scope.joined.filter(function (j) {
+        return tab === "completed" ? j.status === "completed" : j.status !== "completed";
+      }).length;
     };
 
     $scope.resetFilters = function () {
-      $scope.filters.query = "";
-      $scope.filters.category = "All";
+      $scope.filters = { query: "", category: "All", sort: "new" };
     };
 
-    /* ---------- Skill details ---------- */
-    $scope.openSkill = function (skill) {
-      $scope.selected = skill;
-      $scope.chosenTeacher = null;
-    };
-    $scope.closeSkill = function () {
-      $scope.selected = null;
-    };
-
-    /* ---------- Saving ---------- */
-    $scope.isSaved = function (skill) {
-      return $scope.savedIds.indexOf(skill.id) !== -1;
+    /* ---------- Display ---------- */
+    $scope.modeIcon = function (mode) {
+      return {
+        "Live online": "📡",
+        "In person on campus": "📍",
+        "Recorded mini lesson": "🎬",
+        "Pair programming": "👩‍💻",
+        "Quiz / practice session": "🧠",
+      }[mode] || "🎓";
     };
 
-    $scope.toggleSave = function (skill) {
-      var saved = $scope.isSaved(skill);
-      var request = saved
-        ? $http.delete(API + "/saved/" + skill.id, authConfig())
-        : $http.put(API + "/saved/" + skill.id, {}, authConfig());
-
-      request
-        .then(function (res) {
-          if (saved) $scope.savedIds.splice($scope.savedIds.indexOf(skill.id), 1);
-          else $scope.savedIds.push(skill.id);
-          notify(res.data.message);
-        })
-        .catch(handleError);
+    $scope.canAfford = function (s) {
+      return $scope.tokens >= s.reward;
     };
 
-    $scope.savedSkills = function () {
-      return $scope.skills.filter(function (s) { return $scope.isSaved(s); });
+    /* ---------- Open a session (the page there shows the price + Join button) ---------- */
+    $scope.openSession = function (s) {
+      $window.location.href = "teachSession.html?id=" + encodeURIComponent(s.id);
     };
 
-    /* ---------- Learning flow ---------- */
-    $scope.isEnrolled = function (skill) {
-      return $scope.myLearning.some(function (m) {
-        return m.skillId === skill.id && m.status === "learning";
-      });
-    };
-
-    $scope.requestToLearn = function () {
-      var s = $scope.selected;
-      if (!s || !$scope.chosenTeacher || $scope.busy) return;
-      if ($scope.tokens < s.tokens) {
-        notify("You need " + s.tokens + " tokens to learn " + s.name + ".");
-        return;
-      }
-      if ($scope.isEnrolled(s)) return;
-
-      $scope.busy = true;
-      $http
-        .post(API + "/enroll", { skillId: s.id, teacherName: $scope.chosenTeacher.name }, authConfig())
-        .then(function (res) {
-          $scope.tokens = res.data.tokens; // server is the source of truth
-          $scope.myLearning.push(res.data.enrollment);
-          s.learners += 1;
-          notify(res.data.message);
-          $scope.tab = "learning";
-          $scope.closeSkill();
-          refreshRecommended();
-        })
-        .catch(handleError)
-        .finally(function () { $scope.busy = false; });
-    };
-
-    $scope.addProgress = function (item) {
-      if (item.progress >= 100) return;
-      $http
-        .post(API + "/enrollments/" + item.skillId + "/progress", {}, authConfig())
-        .then(function (res) {
-          item.progress = res.data.enrollment.progress;
-          if (res.data.allLessonsDone) notify("All lessons done. You can complete this skill.");
-        })
-        .catch(handleError);
-    };
-
-    $scope.completeSkill = function (item) {
-      if (item.progress < 100) {
-        notify("Finish all lessons before completing " + item.name + ".");
-        return;
-      }
-      $http
-        .post(API + "/enrollments/" + item.skillId + "/complete", {}, authConfig())
-        .then(function (res) {
-          item.status = "completed";
-          $scope.tab = "completed";
-          notify(res.data.message);
-          refreshRecommended();
-        })
-        .catch(handleError);
-    };
-
-    /* Optional: call from a review form for completed skills */
-    $scope.submitReview = function (item, rating, text) {
-      return $http
-        .post(API + "/skills/" + item.skillId + "/reviews", { rating: rating, text: text }, authConfig())
-        .then(function (res) {
-          upsertSkill(res.data.skill);
-          notify("Thanks for your review!");
-        })
-        .catch(handleError);
-    };
-
-    $scope.countBy = function (status) {
-      return $scope.myLearning.filter(function (m) { return m.status === status; }).length;
-    };
-
-    /* ---------- Navigation (used by header/sidebar if needed) ---------- */
     $scope.toggleSidebar = function () {
       $scope.sidebarOpen = !$scope.sidebarOpen;
     };
-  }
+  },
 ]);
